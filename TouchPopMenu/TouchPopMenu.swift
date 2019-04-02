@@ -41,6 +41,11 @@ class TouchPopMenu : UIView
     var cornerRadius : CGFloat = 10.0
 
     /*
+     Background color of the overlay view
+     */
+    var overlayColor : UIColor = UIColor(white: 0.0, alpha: 0.05)
+
+    /*
      Background color of the menu content view
      */
     var menuColor : UIColor = .white
@@ -137,11 +142,11 @@ class TouchPopMenu : UIView
         clipsToBounds = false
 
         layer.masksToBounds = false
-        layer.backgroundColor = UIColor.clear.cgColor
+        layer.backgroundColor = overlayColor.cgColor
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowOffset = CGSize.zero
         layer.shadowOpacity = 0.2
-        layer.shadowRadius = 10.0
+        layer.shadowRadius = 6.0
         layer.shouldRasterize = true
         
         // Create content view
@@ -194,7 +199,7 @@ class TouchPopMenu : UIView
     func hide() {
         isHidden = true
     }
-
+    
     /*
      Frame of the source view
      */
