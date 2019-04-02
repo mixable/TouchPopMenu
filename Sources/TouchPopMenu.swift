@@ -95,7 +95,7 @@ class TouchPopMenu : UIView
     /*
      Init
      */
-    init(for view: UIView)
+    init(pointTo view: UIView)
     {
         source = .view
         sourceView = view
@@ -105,7 +105,7 @@ class TouchPopMenu : UIView
         initMenu()
     }
 
-    init(for button: UIButton)
+    init(pointTo button: UIButton)
     {
         source = .button
         sourceButton = button
@@ -115,7 +115,7 @@ class TouchPopMenu : UIView
         initMenu()
     }
     
-    init(for barButtonItem: UIBarButtonItem)
+    init(pointTo barButtonItem: UIBarButtonItem)
     {
         source = .barButtonItem
         sourceBarButtonItem = barButtonItem
