@@ -88,7 +88,7 @@ class TouchPopMenu : UIView
      Menu views
      */
     private var contentView : UIView?
-    private var arrowView : UIView?
+    private var arrowView : ArrowView?
 
     private var contentSize : CGSize = CGSize.zero
     
@@ -358,7 +358,7 @@ class TouchPopMenu : UIView
     private func initActions()
     {
         // Remove all subviews
-        view.subviews.forEach({ $0.removeFromSuperview() })
+        subviews.forEach({ $0.removeFromSuperview() })
 
         // Create views for each action
         for action in actions

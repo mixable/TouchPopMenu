@@ -10,7 +10,7 @@ import UIKit
 
 class ArrowView : UIView
 {
-    var origin: CGPoint
+    var origin: CGPoint = CGPoint.zero
     var position: TouchPopMenu.Position = .left
     var length: CGFloat = 15.0
     var color: UIColor = .lightGray

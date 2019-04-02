@@ -46,8 +46,8 @@
 		C72EA73F225278C300D699D4 = {
 			isa = PBXGroup;
 			children = (
-				C72EA76B2252792600D699D4 /* Example */,
-				C72EA77A2252793700D699D4 /* Sources */,
+				C72EA76B2252792600D699D4 /* TouchPopMenuDemo */,
+				C72EA77A2252793700D699D4 /* TouchPopMenu */,
 				C72EA749225278C300D699D4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -60,7 +60,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C72EA76B2252792600D699D4 /* Example */ = {
+		C72EA76B2252792600D699D4 /* TouchPopMenuDemo */ = {
 			isa = PBXGroup;
 			children = (
 				C72EA7842252837F00D699D4 /* Info.plist */,
@@ -70,10 +70,10 @@
 				C72EA7702252792600D699D4 /* Main.storyboard */,
 				C72EA7722252792600D699D4 /* AppDelegate.swift */,
 			);
-			path = Example;
+			path = TouchPopMenuDemo;
 			sourceTree = "<group>";
 		};
-		C72EA77A2252793700D699D4 /* Sources */ = {
+		C72EA77A2252793700D699D4 /* TouchPopMenu */ = {
 			isa = PBXGroup;
 			children = (
 				C72EA77B2252793700D699D4 /* TouchPopMenu.swift */,
@@ -81,7 +81,7 @@
 				C73575A92252AEE500B197FC /* TouchGestureRecognizer.swift */,
 				C72EA77C2252793700D699D4 /* ArrowView.swift */,
 			);
-			path = Sources;
+			path = TouchPopMenu;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -308,7 +308,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 7QHMSWN8M8;
-				INFOPLIST_FILE = "$(SRCROOT)/Example/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/TouchPopMenuDemo/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -326,7 +326,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 7QHMSWN8M8;
-				INFOPLIST_FILE = "$(SRCROOT)/Example/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/TouchPopMenuDemo/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
