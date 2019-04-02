@@ -43,7 +43,7 @@ class TouchPopMenu : UIView
     /*
      Background color of the menu content view
      */
-    var menuColor : UIColor = UIColor(white: 0, alpha: 0.1)
+    var menuColor : UIColor = .white
 
     /*
      Text color of the menu actions
@@ -135,15 +135,18 @@ class TouchPopMenu : UIView
     {
         isHidden = true
         clipsToBounds = false
-        
+
+        layer.masksToBounds = false
         layer.backgroundColor = UIColor.clear.cgColor
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowOffset = CGSize.zero
         layer.shadowOpacity = 0.2
-        layer.shadowRadius = 6.0
-
+        layer.shadowRadius = 10.0
+        layer.shouldRasterize = true
+        
         // Create content view
         contentView = UIView()
+
         contentView!.layer.cornerRadius = cornerRadius;
         contentView!.layer.masksToBounds = true;
         contentView!.backgroundColor = menuColor
@@ -379,6 +382,7 @@ class TouchPopMenu : UIView
             label.font = UIFont.systemFont(ofSize: 14.0)
             label.text = action.title
             label.textColor = textColor
+
             contentView!.addSubview(label)
             contentSize.height += labelHeight
             if size.width + (labelInset * 2) > contentSize.width {
