@@ -1,5 +1,5 @@
-<div style="display: block; margin: 0 auto">
-  <img src="https://raw.githubusercontent.com/mixable/TouchPopMenu/master/TouchPopMenu-logo.png" />
+<div>
+  <img src="https://raw.githubusercontent.com/mixable/TouchPopMenu/master/TouchPopMenu-logo.png" style="display: block; margin: 0 auto" />
 </div
 
 [![Swift 5.0](https://img.shields.io/badge/swift-5.0-red.svg?style=flat)](https://developer.apple.com/swift)
