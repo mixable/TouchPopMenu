@@ -20,31 +20,31 @@ class ViewController: UIViewController
     {
         super.loadView()
         
-        let menu = TouchPopMenu(for: buttonCenter)
+        let menu = TouchPopMenu(pointTo: buttonCenter)
         menu.position = .auto
         menu.addAction(action: TouchPopMenuAction(title: "Image"))
         menu.addAction(action: TouchPopMenuAction(title: "File / Attachment"))
         menu.attach()
         
-        let menu1 = TouchPopMenu(for: buttonTopLeft)
+        let menu1 = TouchPopMenu(pointTo: buttonTopLeft)
         menu1.position = .auto
         menu1.addAction(action: TouchPopMenuAction(title: "Image"))
         menu1.addAction(action: TouchPopMenuAction(title: "File / Attachment"))
         menu1.attach()
 
-        let menu2 = TouchPopMenu(for: buttonTopRight)
+        let menu2 = TouchPopMenu(pointTo: buttonTopRight)
         menu2.position = .auto
         menu2.addAction(action: TouchPopMenuAction(title: "Image"))
         menu2.addAction(action: TouchPopMenuAction(title: "File / Attachment"))
         menu2.attach()
 
-        let menu3 = TouchPopMenu(for: buttonBottomLeft)
+        let menu3 = TouchPopMenu(pointTo: buttonBottomLeft)
         menu3.position = .auto
         menu3.addAction(action: TouchPopMenuAction(title: "Image"))
         menu3.addAction(action: TouchPopMenuAction(title: "File / Attachment"))
         menu3.attach()
 
-        let menu4 = TouchPopMenu(for: buttonBottomRight)
+        let menu4 = TouchPopMenu(pointTo: buttonBottomRight)
         menu4.position = .auto
         menu4.addAction(action: TouchPopMenuAction(title: "Image"))
         menu4.addAction(action: TouchPopMenuAction(title: "File / Attachment"))
