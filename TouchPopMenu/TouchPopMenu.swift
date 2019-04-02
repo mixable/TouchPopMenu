@@ -134,12 +134,13 @@ class TouchPopMenu : UIView
     private func layoutMenu()
     {
         isHidden = true
+        clipsToBounds = false
         
         layer.backgroundColor = UIColor.clear.cgColor
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowOffset = CGSize.zero
         layer.shadowOpacity = 0.2
-        layer.shadowRadius = 10.0
+        layer.shadowRadius = 6.0
 
         // Create content view
         contentView = UIView()
@@ -158,15 +159,19 @@ class TouchPopMenu : UIView
         // TODO: required?
         sourceButton?.isUserInteractionEnabled = true
         isUserInteractionEnabled = true
-        
+
         if source == .view {
             sourceView?.superview?.addSubview(self)
+            setNeedsLayout()
+
             let recognizer = TouchGestureRecognizer(target:self,
                                                     action:#selector(touched))
             sourceView?.addGestureRecognizer(recognizer)
         }
         if source == .button {
             sourceButton?.superview?.addSubview(self)
+            setNeedsLayout()
+
             let recognizer = TouchGestureRecognizer(target:self,
                                                     action:#selector(touched))
             sourceButton?.addGestureRecognizer(recognizer)
@@ -210,9 +215,9 @@ class TouchPopMenu : UIView
      */
     private var sourceCenter: CGPoint {
         get {
-            let frame = sourceFrame
-            return CGPoint(x: frame.origin.x + frame.size.width / 2,
-                           y: frame.origin.y + frame.size.height / 2)
+            let source = sourceFrame
+            return CGPoint(x: source.origin.x + source.size.width / 2,
+                           y: source.origin.y + source.size.height / 2)
         }
     }
 
@@ -358,7 +363,8 @@ class TouchPopMenu : UIView
     private func initActions()
     {
         // Remove all subviews
-        subviews.forEach({ $0.removeFromSuperview() })
+        contentView!.subviews.forEach({ $0.removeFromSuperview() })
+        contentSize = CGSize.zero
 
         // Create views for each action
         for action in actions
@@ -382,8 +388,10 @@ class TouchPopMenu : UIView
         setNeedsDisplay()
     }
 
-    override func draw(_ rect: CGRect)
+    override func layoutSubviews()
     {
+        super.layoutSubviews()
+
         // Update frames
         frame = UIScreen.main.bounds
 
@@ -393,6 +401,8 @@ class TouchPopMenu : UIView
                                     height: contentSize.height)
                                     
         arrowView!.origin = arrowOrigin
+        arrowView!.position = menuPosition
+        arrowView!.setNeedsLayout()
         arrowView!.setNeedsDisplay()
     }
 

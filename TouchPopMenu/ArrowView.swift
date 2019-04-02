@@ -25,9 +25,14 @@ class ArrowView : UIView
         self.length = length
         self.color = color
 
-        super.init(frame: CGRect.zero) // Frame will be updated in draw()
+        super.init(frame: CGRect.zero) // The correct frame is calculated later
         
-        self.backgroundColor = .clear
+        frame = CGRect(x: origin.x,
+                       y: origin.y,
+                       width: arrowSize.width,
+                       height: arrowSize.height)
+
+        backgroundColor = .clear
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -46,11 +51,19 @@ class ArrowView : UIView
         }
     }
     
+    override func layoutSubviews()
+    {
+        super.layoutSubviews()
+
+        // Update frame
+        frame = CGRect(x: origin.x,
+                       y: origin.y,
+                       width: arrowSize.width,
+                       height: arrowSize.height)
+    }
+    
     override func draw(_ rect: CGRect)
     {
-        // Set frame
-        self.frame = CGRect(x: origin.x, y: origin.y, width: arrowSize.width, height: arrowSize.height)
-
         // Draw in graphics context
         guard let context = UIGraphicsGetCurrentContext() else { return }
 

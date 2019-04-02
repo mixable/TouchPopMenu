@@ -24,6 +24,7 @@ class ViewController: UIViewController
         menu.position = .auto
         menu.addAction(action: TouchPopMenuAction(title: "Image"))
         menu.addAction(action: TouchPopMenuAction(title: "File / Attachment"))
+        menu.show()
         
         let menu1 = TouchPopMenu(pointTo: buttonTopLeft)
         menu1.position = .auto
