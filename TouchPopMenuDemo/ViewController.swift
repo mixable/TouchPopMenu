@@ -22,29 +22,34 @@ class ViewController: UIViewController
         
         let menu = TouchPopMenu(pointTo: buttonCenter)
         menu.position = .auto
-        menu.addAction(action: TouchPopMenuAction(title: "Image"))
-        menu.addAction(action: TouchPopMenuAction(title: "File / Attachment"))
+        menu.addAction(action: TouchPopMenuAction(title: "Copy"))
+        menu.addAction(action: TouchPopMenuAction(title: "Paste"))
+        menu.addAction(action: TouchPopMenuAction(title: "Undo last action"))
         menu.show()
         
         let menu1 = TouchPopMenu(pointTo: buttonTopLeft)
         menu1.position = .auto
-        menu1.addAction(action: TouchPopMenuAction(title: "Image"))
-        menu1.addAction(action: TouchPopMenuAction(title: "File / Attachment"))
+        menu1.addAction(action: TouchPopMenuAction(title: "Copy"))
+        menu1.addAction(action: TouchPopMenuAction(title: "Paste"))
+        menu1.addAction(action: TouchPopMenuAction(title: "Undo last action"))
 
         let menu2 = TouchPopMenu(pointTo: buttonTopRight)
         menu2.position = .auto
-        menu2.addAction(action: TouchPopMenuAction(title: "Image"))
-        menu2.addAction(action: TouchPopMenuAction(title: "File / Attachment"))
+        menu2.addAction(action: TouchPopMenuAction(title: "Copy"))
+        menu2.addAction(action: TouchPopMenuAction(title: "Paste"))
+        menu2.addAction(action: TouchPopMenuAction(title: "Undo last action"))
 
         let menu3 = TouchPopMenu(pointTo: buttonBottomLeft)
         menu3.position = .auto
-        menu3.addAction(action: TouchPopMenuAction(title: "Image"))
-        menu3.addAction(action: TouchPopMenuAction(title: "File / Attachment"))
+        menu3.addAction(action: TouchPopMenuAction(title: "Copy"))
+        menu3.addAction(action: TouchPopMenuAction(title: "Paste"))
+        menu3.addAction(action: TouchPopMenuAction(title: "Undo last action"))
 
         let menu4 = TouchPopMenu(pointTo: buttonBottomRight)
         menu4.position = .auto
-        menu4.addAction(action: TouchPopMenuAction(title: "Image"))
-        menu4.addAction(action: TouchPopMenuAction(title: "File / Attachment"))
+        menu4.addAction(action: TouchPopMenuAction(title: "Copy"))
+        menu4.addAction(action: TouchPopMenuAction(title: "Paste"))
+        menu4.addAction(action: TouchPopMenuAction(title: "Undo last action"))
     }
     
     override func viewDidLoad() {
