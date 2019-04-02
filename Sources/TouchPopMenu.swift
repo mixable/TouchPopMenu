@@ -102,7 +102,7 @@ class TouchPopMenu : UIView
         
         super.init(frame: UIScreen.main.bounds)
 
-        initMenu()
+        layoutMenu()
     }
 
     init(pointTo button: UIButton)
@@ -112,7 +112,7 @@ class TouchPopMenu : UIView
 
         super.init(frame: UIScreen.main.bounds)
         
-        initMenu()
+        layoutMenu()
     }
     
     init(pointTo barButtonItem: UIBarButtonItem)
@@ -122,7 +122,7 @@ class TouchPopMenu : UIView
 
         super.init(frame: UIScreen.main.bounds)
         
-        initMenu()
+        layoutMenu()
     }
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -131,27 +131,33 @@ class TouchPopMenu : UIView
     /*
      Init all menu views and gesture recognizers
      */
-    private func initMenu()
+    private func layoutMenu()
     {
-        self.isHidden = true
+        isHidden = true
+        
+        layer.backgroundColor = UIColor.clear.cgColor
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize.zero
+        layer.shadowOpacity = 0.2
+        layer.shadowRadius = 10.0
 
         // Create content view
         contentView = UIView()
         contentView!.layer.cornerRadius = cornerRadius;
         contentView!.layer.masksToBounds = true;
         contentView!.backgroundColor = menuColor
-        self.addSubview(contentView!)
+        addSubview(contentView!)
             
         // Create arrow view
         arrowView = ArrowView(origin: CGPoint(x: arrowOrigin.x, y: arrowOrigin.y),
                               position: menuPosition,
                               length: arrowLength,
                               color: self.menuColor)
-        self.addSubview(arrowView!)
+        addSubview(arrowView!)
 
         // TODO: required?
         sourceButton?.isUserInteractionEnabled = true
-        self.isUserInteractionEnabled = true
+        isUserInteractionEnabled = true
         
         if source == .view {
             sourceView?.superview?.addSubview(self)
@@ -171,14 +177,14 @@ class TouchPopMenu : UIView
      Show menu
      */
     func show() {
-        self.isHidden = false
+        isHidden = false
     }
     
     /*
      Hide menu
      */
     func hide() {
-        self.isHidden = true
+        isHidden = true
     }
 
     /*
@@ -379,7 +385,7 @@ class TouchPopMenu : UIView
     override func draw(_ rect: CGRect)
     {
         // Update frames
-        self.frame = UIScreen.main.bounds
+        frame = UIScreen.main.bounds
 
         contentView!.frame = CGRect(x: contentOrigin.x,
                                     y: contentOrigin.y,
@@ -393,7 +399,7 @@ class TouchPopMenu : UIView
     @objc func touched()
     {
         // do something here
-        self.show()
+        show()
         NSLog("touched ...")
     }
     
@@ -428,13 +434,13 @@ class TouchPopMenu : UIView
 
             // Hide when on sourceView
             if (sourceFrame.contains(point)) {
-                self.hide()
+                hide()
             }
             // Hide when outside of menu
             let contentFrame = contentView?.frame
             let arrowFrame = arrowView?.frame
             if (!arrowFrame!.contains(point) && !contentFrame!.contains(point)) {
-                self.hide()
+                hide()
             }
         }
     }
