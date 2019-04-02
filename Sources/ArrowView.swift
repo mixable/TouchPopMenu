@@ -10,29 +10,22 @@ import UIKit
 
 class ArrowView : UIView
 {
-    private var position: TouchPopMenu.Position = .left
-    private var color: UIColor = .lightGray
+    var origin: CGPoint
+    var position: TouchPopMenu.Position = .left
+    var length: CGFloat = 15.0
+    var color: UIColor = .lightGray
 
     init(origin: CGPoint,
-         length: CGFloat,
          position: TouchPopMenu.Position,
+         length: CGFloat = 15.0,
          color: UIColor = .lightGray)
     {
+        self.origin = origin
         self.position = position
+        self.length = length
         self.color = color
-        
-        var width = length * 2
-        var height = length
-        if position == .left || position == .right {
-            width = length
-            height = length * 2
-        }
-        if position == .top || position == .bottom {
-            width = length * 2
-            height = length
-        }
-        let frame = CGRect(x: origin.x, y: origin.y, width: width, height: height)
-        super.init(frame: frame)
+
+        super.init(frame: CGRect.zero) // Frame will be updated in draw()
         
         self.backgroundColor = .clear
     }
@@ -41,8 +34,24 @@ class ArrowView : UIView
         super.init(coder: aDecoder)
     }
 
+    var arrowSize : CGSize {
+        get {
+            if position == .left || position == .right {
+                return CGSize(width: length, height: length * 2)
+            }
+            if position == .top || position == .bottom {
+                return CGSize(width: length * 2, height: length)
+            }
+            return CGSize.zero
+        }
+    }
+    
     override func draw(_ rect: CGRect)
     {
+        // Set frame
+        self.frame = CGRect(x: origin.x, y: origin.y, width: arrowSize.width, height: arrowSize.height)
+
+        // Draw in graphics context
         guard let context = UIGraphicsGetCurrentContext() else { return }
 
         context.beginPath()

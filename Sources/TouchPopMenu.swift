@@ -10,6 +10,9 @@ import UIKit
 
 class TouchPopMenu : UIView
 {
+    /*
+     Position of the menu
+     */
     public enum Position {
         case auto
         case left
@@ -18,6 +21,9 @@ class TouchPopMenu : UIView
         case bottom
     }
 
+    /*
+     Type of source
+     */
     public enum Source {
         case view
         case button
@@ -86,7 +92,9 @@ class TouchPopMenu : UIView
 
     private var contentSize : CGSize = CGSize.zero
     
-
+    /*
+     Init
+     */
     init(for view: UIView)
     {
         source = .view
@@ -96,7 +104,7 @@ class TouchPopMenu : UIView
 
         initMenu()
     }
-    
+
     init(for button: UIButton)
     {
         source = .button
@@ -120,13 +128,59 @@ class TouchPopMenu : UIView
         fatalError("init(coder:) has not been implemented")
     }
 
-
-    func initMenu()
+    /*
+     Init all menu views and gesture recognizers
+     */
+    private func initMenu()
     {
+        self.isHidden = true
+
+        // Create content view
+        contentView = UIView()
+        contentView!.layer.cornerRadius = cornerRadius;
+        contentView!.layer.masksToBounds = true;
+        contentView!.backgroundColor = menuColor
+        self.addSubview(contentView!)
+            
+        // Create arrow view
+        arrowView = ArrowView(origin: CGPoint(x: arrowOrigin.x, y: arrowOrigin.y),
+                              position: menuPosition,
+                              length: arrowLength,
+                              color: self.menuColor)
+        self.addSubview(arrowView!)
+
+        // TODO: required?
         sourceButton?.isUserInteractionEnabled = true
         self.isUserInteractionEnabled = true
+        
+        if source == .view {
+            sourceView?.superview?.addSubview(self)
+            let recognizer = TouchGestureRecognizer(target:self,
+                                                    action:#selector(touched))
+            sourceView?.addGestureRecognizer(recognizer)
+        }
+        if source == .button {
+            sourceButton?.superview?.addSubview(self)
+            let recognizer = TouchGestureRecognizer(target:self,
+                                                    action:#selector(touched))
+            sourceButton?.addGestureRecognizer(recognizer)
+        }
     }
     
+    /*
+     Show menu
+     */
+    func show() {
+        self.isHidden = false
+    }
+    
+    /*
+     Hide menu
+     */
+    func hide() {
+        self.isHidden = true
+    }
+
     /*
      Frame of the source view
      */
@@ -153,6 +207,33 @@ class TouchPopMenu : UIView
             let frame = sourceFrame
             return CGPoint(x: frame.origin.x + frame.size.width / 2,
                            y: frame.origin.y + frame.size.height / 2)
+        }
+    }
+
+    /*
+     Origin of arrow view
+     */
+    private var arrowOrigin : CGPoint {
+        get {
+            let sourceSize = sourceFrame.size
+            
+            if menuPosition == .left {
+                return CGPoint(x: sourceCenter.x - (sourceSize.width / 2) - arrowLength,
+                               y: sourceCenter.y - arrowLength)
+            }
+            if menuPosition == .top {
+                return CGPoint(x: sourceCenter.x - arrowLength,
+                               y: sourceCenter.y - (sourceSize.height / 2) - arrowLength)
+            }
+            if menuPosition == .right {
+                return CGPoint(x: sourceCenter.x + (sourceSize.width / 2),
+                               y: sourceCenter.y - arrowLength)
+            }
+            if menuPosition == .bottom {
+                return CGPoint(x: sourceCenter.x - arrowLength,
+                               y: sourceCenter.y + (sourceSize.height / 2))
+            }
+            return CGPoint.zero
         }
     }
 
@@ -184,112 +265,96 @@ class TouchPopMenu : UIView
             }
         }
     }
+    
+    /*
+     Origin of content view
+     */
+    private var contentOrigin : CGPoint {
+        get {
+            let screenSize = UIScreen.main.bounds
+            let sourceSize = sourceFrame.size
 
-    private var arrowOrigin : CGPoint
-    {
-        let sourceSize = sourceFrame.size
-        
-        if menuPosition == .left {
-            return CGPoint(x: sourceCenter.x - (sourceSize.width / 2) - arrowLength,
-                           y: sourceCenter.y - arrowLength)
+            if menuPosition == .left {
+                let x = sourceCenter.x - (sourceSize.width / 2) - arrowLength - contentSize.width
+                var y = sourceCenter.y - (contentSize.height / 2)
+                if y < screenInset {
+                    y = screenInset
+                }
+                if y + contentSize.height > screenSize.height - screenInset {
+                    y = screenSize.height - contentSize.height - screenInset
+                }
+                return CGPoint(x: x, y: y)
+            }
+            if menuPosition == .top {
+                var x = sourceCenter.x - (contentSize.width / 2)
+                let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - contentSize.height
+                if x < screenInset {
+                    x = screenInset
+                }
+                if x + contentSize.width > screenSize.width - screenInset {
+                    x = screenSize.width - contentSize.width - screenInset
+                }
+                return CGPoint(x: x, y: y)
+            }
+            if menuPosition == .right {
+                let x = sourceCenter.x + (sourceSize.width / 2) + arrowLength
+                var y = sourceCenter.y - (contentSize.height / 2)
+                if y < screenInset {
+                    y = screenInset
+                }
+                if y + contentSize.height > screenSize.height - screenInset {
+                    y = screenSize.height - contentSize.height - screenInset
+                }
+                return CGPoint(x: x, y: y)
+            }
+            if menuPosition == .bottom {
+                var x = sourceCenter.x - (contentSize.width / 2)
+                let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
+                if x < screenInset {
+                    x = screenInset
+                }
+                if x + contentSize.width > screenSize.width - screenInset {
+                    x = screenSize.width - contentSize.width - screenInset
+                }
+                return CGPoint(x: x, y: y)
+            }
+            return CGPoint.zero
         }
-        if menuPosition == .top {
-            return CGPoint(x: sourceCenter.x - arrowLength,
-                           y: sourceCenter.y - (sourceSize.height / 2) - arrowLength)
-        }
-        if menuPosition == .right {
-            return CGPoint(x: sourceCenter.x + (sourceSize.width / 2),
-                           y: sourceCenter.y - arrowLength)
-        }
-        if menuPosition == .bottom {
-            return CGPoint(x: sourceCenter.x - arrowLength,
-                           y: sourceCenter.y + (sourceSize.height / 2))
-        }
-        return CGPoint.zero
     }
     
-    private var arrowSize : CGSize
-    {
-        if menuPosition == .left || menuPosition == .right {
-            return CGSize(width: arrowLength,
-                          height: arrowLength * 2)
-        }
-        if menuPosition == .top || menuPosition == .bottom {
-            return CGSize(width: arrowLength * 2,
-                          height: arrowLength)
-        }
-        return CGSize.zero
-    }
-    
-    private var contentOrigin : CGPoint
-    {
-        let screenSize = UIScreen.main.bounds
-        let sourceSize = sourceFrame.size
-
-        if menuPosition == .left {
-            let x = sourceCenter.x - (sourceSize.width / 2) - arrowLength - contentSize.width
-            var y = sourceCenter.y - (contentSize.height / 2)
-            if y < screenInset {
-                y = screenInset
-            }
-            if y + contentSize.height > screenSize.height - screenInset {
-                y = screenSize.height - contentSize.height - screenInset
-            }
-            return CGPoint(x: x, y: y)
-        }
-        if menuPosition == .top {
-            var x = sourceCenter.x - (contentSize.width / 2)
-            let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - contentSize.height
-            if x < screenInset {
-                x = screenInset
-            }
-            if x + contentSize.width > screenSize.width - screenInset {
-                x = screenSize.width - contentSize.width - screenInset
-            }
-            return CGPoint(x: x, y: y)
-        }
-        if menuPosition == .right {
-            let x = sourceCenter.x + (sourceSize.width / 2) + arrowLength
-            var y = sourceCenter.y - (contentSize.height / 2)
-            if y < screenInset {
-                y = screenInset
-            }
-            if y + contentSize.height > screenSize.height - screenInset {
-                y = screenSize.height - contentSize.height - screenInset
-            }
-            return CGPoint(x: x, y: y)
-        }
-        if menuPosition == .bottom {
-            var x = sourceCenter.x - (contentSize.width / 2)
-            let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
-            if x < screenInset {
-                x = screenInset
-            }
-            if x + contentSize.width > screenSize.width - screenInset {
-                x = screenSize.width - contentSize.width - screenInset
-            }
-            return CGPoint(x: x, y: y)
-        }
-        return CGPoint.zero
-    }
-    
+    /*
+     Add an action to the menu
+     */
     func addAction(action: TouchPopMenuAction)
     {
         actions.append(action)
+        initActions()
     }
     
+    /*
+     Remove an action from the menu
+     */
+    func removeAction(action: TouchPopMenuAction)
+    {
+        actions = actions.filter() { $0 !== action }
+        initActions()
+    }
+    
+    /*
+     Remove all actions from the menu
+     */
     func removeAllActions()
     {
         actions.removeAll()
+        initActions()
     }
 
-    func attach()
+    private func initActions()
     {
-        self.isHidden = true
+        // Remove all subviews
+        view.subviews.forEach({ $0.removeFromSuperview() })
 
-        // Create action views
-        contentView = UIView()
-
+        // Create views for each action
         for action in actions
         {
             let size: CGSize = action.title.size(withAttributes: [
@@ -308,54 +373,21 @@ class TouchPopMenu : UIView
                 contentSize.width = size.width + (labelInset * 2)
             }
         }
-        
-        // Resize container view to match max dimension of labels
-        contentView!.layer.cornerRadius = cornerRadius;
-        contentView!.layer.masksToBounds = true;
-        contentView!.backgroundColor = menuColor
-        
-        contentView!.frame = CGRect(x: contentOrigin.x,
-                                    y: contentOrigin.y,
-                                    width: contentSize.width,
-                                    height: contentSize.height)
-        self.addSubview(contentView!)
-        
-        // Create arrow view
-        arrowView = ArrowView(origin: CGPoint(x: arrowOrigin.x, y: arrowOrigin.y),
-                              length: arrowLength,
-                              position: menuPosition,
-                              color: self.menuColor)
-        self.addSubview(arrowView!)
-        
-        if source == .view {
-            sourceView?.superview?.addSubview(self)
-            let recognizer = TouchGestureRecognizer(target:self,
-                                                    action:#selector(touched))
-            sourceView?.addGestureRecognizer(recognizer)
-        }
-        if source == .button {
-            sourceButton?.superview?.addSubview(self)
-            let recognizer = TouchGestureRecognizer(target:self,
-                                                    action:#selector(touched))
-            sourceButton?.addGestureRecognizer(recognizer)
-        }
+        setNeedsDisplay()
     }
-    
-    func updateFrames()
+
+    override func draw(_ rect: CGRect)
     {
+        // Update frames
         self.frame = UIScreen.main.bounds
-        
+
         contentView!.frame = CGRect(x: contentOrigin.x,
                                     y: contentOrigin.y,
                                     width: contentSize.width,
                                     height: contentSize.height)
-        
-        // TODO: arrowView korrekt neu zeichnen und positionieren
-        
-        arrowView!.frame = CGRect(x: arrowOrigin.x,
-                                  y: arrowOrigin.y,
-                                  width: arrowSize.width,
-                                  height: arrowSize.height)
+                                    
+        arrowView!.origin = arrowOrigin
+        arrowView!.setNeedsDisplay()
     }
 
     @objc func touched()
@@ -405,16 +437,5 @@ class TouchPopMenu : UIView
                 self.hide()
             }
         }
-    }
-
-    func show()
-    {
-        updateFrames()
-        self.isHidden = false
-    }
-    
-    func hide()
-    {
-        self.isHidden = true
     }
 }
