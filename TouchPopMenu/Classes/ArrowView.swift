@@ -41,10 +41,12 @@ class ArrowView : UIView
 
     var arrowSize : CGSize {
         get {
-            if position == .left || position == .right {
+            if position == .left || position == .leftUp || position == .leftDown
+                || position == .right || position == .rightUp || position == .rightDown {
                 return CGSize(width: length, height: length * 2)
             }
-            if position == .top || position == .bottom {
+            if position == .up || position == .upLeft || position == .upRight
+                || position == .down || position == .downLeft || position == .downRight {
                 return CGSize(width: length * 2, height: length)
             }
             return CGSize.zero
@@ -69,22 +71,22 @@ class ArrowView : UIView
 
         context.beginPath()
     
-        if (position == .left) {
+        if (position == .left || position == .leftUp || position == .leftDown) {
             context.move(to: CGPoint(x: rect.minX, y: rect.minY))
             context.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY / 2))
             context.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
         }
-        if (position == .top) {
+        if (position == .up || position == .upLeft || position == .upRight) {
             context.move(to: CGPoint(x: rect.minX, y: rect.minY))
             context.addLine(to: CGPoint(x: rect.maxX / 2, y: rect.maxY))
             context.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
         }
-        if (position == .right) {
+        if (position == .right || position == .rightUp || position == .rightDown) {
             context.move(to: CGPoint(x: rect.maxX, y: rect.minY))
             context.addLine(to: CGPoint(x: rect.minX, y: rect.maxY / 2))
             context.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         }
-        if (position == .bottom) {
+        if (position == .down || position == .downLeft || position == .downRight) {
             context.move(to: CGPoint(x: rect.minX, y: rect.maxY))
             context.addLine(to: CGPoint(x: rect.maxX / 2, y: rect.minY))
             context.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
