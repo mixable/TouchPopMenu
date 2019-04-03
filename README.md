@@ -8,20 +8,22 @@
 # TouchPopMenu
 A touchable popover menu for iOS made in Swift.
 
-# Installation
+## Installation
 
 ...
 
-# Example usage
+## Example usage
 
 ...
 
-# Configuration and customization
+## Configuration and customization
 
-## Properties
+### Properties
 
-### Property `.position`
+#### Property `.position`
+
 Type: `TouchPopMenu.Position`
+
 Default: `.auto`
 
 Defines the position of the menu related to the source view.
@@ -29,11 +31,11 @@ Normall it should be enough to use the main directions `.left`, `.up`, `.right` 
 
 Value | Description
 --- | ---
+`.auto` | Automatically set the position of the menu related to the source view **(default)**
 `.left` | Show menu on the **left** of the source view
 `.up` | Show menu **above** the source view
 `.right` | Show menu on the **right** of the source view
 `.down` | Show menu **below** the source view
---- | ---
 `.leftUp` | Show menu on the **left** of the source view, directed **up**
 `.leftDown` | Show menu on the **left** of the source view, directed **down**
 `.upLeft` | Show menu **above** the source view, directed to the **left**
