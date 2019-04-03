@@ -39,8 +39,8 @@ Value | Description
 `.leftUp` | Show menu on the **left** of the source view, directed **up**
 `.leftDown` | Show menu on the **left** of the source view, directed **down**
 `.upLeft` | Show menu **above** the source view, directed to the **left**
-`.upRight` | Show menu**above** the source view, directed to the **right**
+`.upRight` | Show menu **above** the source view, directed to the **right**
 `.rightUp` | Show menu on the **right** of the source view, directed **up**
 `.rightDown` | Show menu on the **right** of the source view, directed **down**
 `.downLeft` | Show menu **below** the source view, directed to the **left**
-`.downRight` | Show menu**below** the source view, directed to the **right**
+`.downRight` | Show menu **below** the source view, directed to the **right**
