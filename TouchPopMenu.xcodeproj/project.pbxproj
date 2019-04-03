@@ -18,6 +18,7 @@
 		C7FE81C52254B0F500F6B9C4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C7FE81C42254B0F500F6B9C4 /* Assets.xcassets */; };
 		C7FE81C82254B0F500F6B9C4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7FE81C62254B0F500F6B9C4 /* LaunchScreen.storyboard */; };
 		C7FE81D32254B0F500F6B9C4 /* TouchPopMenuDemoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7FE81D22254B0F500F6B9C4 /* TouchPopMenuDemoUITests.swift */; };
+		C7FE81E3225506AA00F6B9C4 /* TouchPopMenu.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C75F74DF2254AFE100CE4E79 /* TouchPopMenu.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C7FE81E3225506AA00F6B9C4 /* TouchPopMenu.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +84,7 @@
 				C7FE81BC2254B0F300F6B9C4 /* TouchPopMenuDemo */,
 				C7FE81D12254B0F500F6B9C4 /* TouchPopMenuDemoUITests */,
 				C75F74E02254AFE100CE4E79 /* Products */,
+				C7FE81E2225506AA00F6B9C4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -136,6 +139,13 @@
 				C7FE81D42254B0F500F6B9C4 /* Info.plist */,
 			);
 			path = TouchPopMenuDemoUITests;
+			sourceTree = "<group>";
+		};
+		C7FE81E2225506AA00F6B9C4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

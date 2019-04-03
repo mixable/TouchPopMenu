@@ -27,7 +27,7 @@ class ViewController: UIViewController
         menu.addAction(action: TouchPopMenuAction(title: "Paste"))
         menu.addAction(action: TouchPopMenuAction(title: "Undo last action"))
         menu.show()
-        
+
         let menu1 = TouchPopMenu(pointTo: buttonTopLeft)
         menu1.position = .auto
         menu1.addAction(action: TouchPopMenuAction(title: "Copy"))

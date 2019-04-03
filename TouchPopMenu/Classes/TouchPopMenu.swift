@@ -86,6 +86,16 @@ public class TouchPopMenu : UIView
     public var screenInset : CGFloat = 8.0
 
     /*
+     Duration of the show/hide animations
+     */
+    public var animationDuration : TimeInterval = 0.15
+
+    /*
+     Moving offset of the show/hide animations
+     */
+    public var animationOffset : CGFloat = 10
+
+    /*
      Source to attach the menu
      */
     private var source : Source = .view
@@ -102,6 +112,7 @@ public class TouchPopMenu : UIView
     /*
      Menu views
      */
+    private var containerView : UIView?
     private var contentView : UIView?
     private var arrowView : ArrowView?
 
@@ -150,29 +161,33 @@ public class TouchPopMenu : UIView
     {
         isHidden = true
         clipsToBounds = false
-
         layer.masksToBounds = false
         layer.backgroundColor = overlayColor.cgColor
-        layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOffset = CGSize.zero
-        layer.shadowOpacity = 0.2
-        layer.shadowRadius = 6.0
-        layer.shouldRasterize = true
+
+        // Create container view
+        containerView = UIView(frame: UIScreen.main.bounds)
+        containerView!.layer.masksToBounds = false
+        containerView!.layer.backgroundColor = UIColor.clear.cgColor
+        containerView!.layer.shadowColor = UIColor.black.cgColor
+        containerView!.layer.shadowOffset = CGSize.zero
+        containerView!.layer.shadowOpacity = 0.2
+        containerView!.layer.shadowRadius = 6.0
+        containerView!.layer.shouldRasterize = true
+        addSubview(containerView!)
         
         // Create content view
         contentView = UIView()
-
         contentView!.layer.cornerRadius = cornerRadius;
         contentView!.layer.masksToBounds = true;
         contentView!.backgroundColor = menuColor
-        addSubview(contentView!)
+        containerView!.addSubview(contentView!)
             
         // Create arrow view
         arrowView = ArrowView(origin: CGPoint(x: arrowOrigin.x, y: arrowOrigin.y),
                               position: menuPosition,
                               length: arrowLength,
                               color: self.menuColor)
-        addSubview(arrowView!)
+        containerView!.addSubview(arrowView!)
 
         // TODO: required?
         sourceButton?.isUserInteractionEnabled = true
@@ -199,15 +214,81 @@ public class TouchPopMenu : UIView
     /*
      Show menu
      */
-    public func show() {
-        isHidden = false
+    public func show()
+    {
+        if menuPosition == .left || menuPosition == .leftUp || menuPosition == .leftDown
+        {
+            containerView!.layer.opacity = 0
+            containerView!.frame.origin.x = animationOffset
+            layer.opacity = 0
+            isHidden = false
+        }
+        else if menuPosition == .up || menuPosition == .upLeft || menuPosition == .upRight
+        {
+            containerView!.layer.opacity = 0
+            containerView!.frame.origin.y = animationOffset
+            layer.opacity = 0
+            isHidden = false
+        }
+        else if menuPosition == .right || menuPosition == .rightUp || menuPosition == .rightDown
+        {
+            containerView!.layer.opacity = 0
+            containerView!.frame.origin.x = -animationOffset
+            layer.opacity = 0
+            isHidden = false
+        }
+        else if menuPosition == .down || menuPosition == .downLeft || menuPosition == .downRight
+        {
+            containerView!.layer.opacity = 0
+            containerView!.frame.origin.y = -animationOffset
+            layer.opacity = 0
+            isHidden = false
+        }
+
+        UIView.animate(withDuration: self.animationDuration, delay: 0, options: [.curveEaseIn], animations: {
+            self.containerView!.frame.origin.x = 0
+            self.containerView!.frame.origin.y = 0
+            self.containerView!.layer.opacity = 1
+            self.layer.opacity = 1
+        })
     }
     
     /*
      Hide menu
      */
-    public func hide() {
-        isHidden = true
+    public func hide()
+    {
+        containerView!.layer.opacity = 1
+        layer.opacity = 1
+
+        UIView.animate(withDuration: self.animationDuration, delay: 0, options: [.curveEaseIn], animations: {
+            if self.menuPosition == .left || self.menuPosition == .leftUp || self.menuPosition == .leftDown
+            {
+                self.containerView!.layer.opacity = 0
+                self.containerView!.frame.origin.x = self.animationOffset
+                self.layer.opacity = 0
+            }
+            else if self.menuPosition == .up || self.menuPosition == .upLeft || self.menuPosition == .upRight
+            {
+                self.containerView!.layer.opacity = 0
+                self.containerView!.frame.origin.y = self.animationOffset
+                self.layer.opacity = 0
+            }
+            else if self.menuPosition == .right || self.menuPosition == .rightUp || self.menuPosition == .rightDown
+            {
+                self.containerView!.layer.opacity = 0
+                self.containerView!.frame.origin.x = -self.animationOffset
+                self.layer.opacity = 0
+            }
+            else if self.menuPosition == .down || self.menuPosition == .downLeft || self.menuPosition == .downRight
+            {
+                self.containerView!.layer.opacity = 0
+                self.containerView!.frame.origin.y = -self.animationOffset
+                self.layer.opacity = 0
+            }
+        }, completion: { (finished: Bool) in
+            self.isHidden = true
+        })
     }
     
     /*
@@ -356,8 +437,8 @@ public class TouchPopMenu : UIView
      */
     public func addAction(action: TouchPopMenuAction)
     {
-        actions.append(action)
-        initActions()
+        self.actions.append(action)
+        self.initActions()
     }
     
     /*
@@ -413,6 +494,7 @@ public class TouchPopMenu : UIView
 
         // Update frames
         frame = UIScreen.main.bounds
+        containerView!.frame = UIScreen.main.bounds
 
         contentView!.frame = CGRect(x: contentOrigin.x,
                                     y: contentOrigin.y,
