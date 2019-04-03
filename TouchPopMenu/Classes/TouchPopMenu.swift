@@ -66,6 +66,11 @@ public class TouchPopMenu : UIView
     public var textColor : UIColor = .black
     
     /*
+     Text color of the menu action divider
+     */
+    public var dividerColor : UIColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 1.0)
+    
+    /*
      Size of the arrow triangle
      */
     public var arrowLength : CGFloat = 15.0
@@ -170,8 +175,8 @@ public class TouchPopMenu : UIView
         containerView!.layer.backgroundColor = UIColor.clear.cgColor
         containerView!.layer.shadowColor = UIColor.black.cgColor
         containerView!.layer.shadowOffset = CGSize.zero
-        containerView!.layer.shadowOpacity = 0.2
-        containerView!.layer.shadowRadius = 6.0
+        containerView!.layer.shadowOpacity = 0.1
+        containerView!.layer.shadowRadius = 25.0
         containerView!.layer.shouldRasterize = true
         addSubview(containerView!)
         
@@ -466,6 +471,7 @@ public class TouchPopMenu : UIView
         contentSize = CGSize.zero
 
         // Create views for each action
+        var row = 0
         for action in actions
         {
             let size: CGSize = action.title.size(withAttributes: [
@@ -478,12 +484,21 @@ public class TouchPopMenu : UIView
             label.font = UIFont.systemFont(ofSize: 14.0)
             label.text = action.title
             label.textColor = textColor
+            
+            // Add border (= top border of label)
+            if row > 0 {
+                let borderLayer = CALayer()
+                borderLayer.frame = CGRect(x: 0, y: contentSize.height, width: label.frame.width, height: 1)
+                borderLayer.backgroundColor = dividerColor.cgColor
+                contentView!.layer.addSublayer(borderLayer)
+            }
 
             contentView!.addSubview(label)
             contentSize.height += labelHeight
             if size.width + (labelInset * 2) > contentSize.width {
                 contentSize.width = size.width + (labelInset * 2)
             }
+            row += 1
         }
         setNeedsDisplay()
     }
@@ -500,6 +515,10 @@ public class TouchPopMenu : UIView
                                     y: contentOrigin.y,
                                     width: contentSize.width,
                                     height: contentSize.height)
+        
+        for divider in contentView!.layer.sublayers! {
+            divider.frame.size.width = contentSize.width
+        }
                                     
         arrowView!.origin = arrowOrigin
         arrowView!.position = menuPosition
