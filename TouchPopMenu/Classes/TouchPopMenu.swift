@@ -8,7 +8,7 @@
 
 import UIKit
 
-class TouchPopMenu : UIView
+public class TouchPopMenu : UIView
 {
     /*
      Position of the menu
@@ -33,47 +33,47 @@ class TouchPopMenu : UIView
     /*
      Position relative to source view
      */
-    var position : Position = .auto
+    public var position : Position = .auto
 
     /*
      Corner radius of menu content view
      */
-    var cornerRadius : CGFloat = 10.0
+    public var cornerRadius : CGFloat = 10.0
 
     /*
      Background color of the overlay view
      */
-    var overlayColor : UIColor = UIColor(white: 0.0, alpha: 0.05)
+    public var overlayColor : UIColor = UIColor(white: 0.0, alpha: 0.05)
 
     /*
      Background color of the menu content view
      */
-    var menuColor : UIColor = .white
+    public var menuColor : UIColor = .white
 
     /*
      Text color of the menu actions
      */
-    var textColor : UIColor = .black
+    public var textColor : UIColor = .black
     
     /*
      Size of the arrow triangle
      */
-    var arrowLength : CGFloat = 15.0
+    public var arrowLength : CGFloat = 15.0
     
     /*
      Height of action labels
      */
-    var labelHeight : CGFloat = 40.0
+    public var labelHeight : CGFloat = 40.0
     
     /*
      Horizontal spacing of label text
      */
-    var labelInset : CGFloat = 15.0
+    public var labelInset : CGFloat = 15.0
 
     /*
      Space between menu and screen edges
      */
-    var screenInset : CGFloat = 8.0
+    public var screenInset : CGFloat = 8.0
 
     /*
      Source to attach the menu
@@ -100,7 +100,7 @@ class TouchPopMenu : UIView
     /*
      Init
      */
-    init(pointTo view: UIView)
+    public init(pointTo view: UIView)
     {
         source = .view
         sourceView = view
@@ -110,7 +110,7 @@ class TouchPopMenu : UIView
         layoutMenu()
     }
 
-    init(pointTo button: UIButton)
+    public init(pointTo button: UIButton)
     {
         source = .button
         sourceButton = button
@@ -120,7 +120,7 @@ class TouchPopMenu : UIView
         layoutMenu()
     }
     
-    init(pointTo barButtonItem: UIBarButtonItem)
+    public init(pointTo barButtonItem: UIBarButtonItem)
     {
         source = .barButtonItem
         sourceBarButtonItem = barButtonItem
@@ -189,14 +189,14 @@ class TouchPopMenu : UIView
     /*
      Show menu
      */
-    func show() {
+    public func show() {
         isHidden = false
     }
     
     /*
      Hide menu
      */
-    func hide() {
+    public func hide() {
         isHidden = true
     }
     
@@ -344,7 +344,7 @@ class TouchPopMenu : UIView
     /*
      Add an action to the menu
      */
-    func addAction(action: TouchPopMenuAction)
+    public func addAction(action: TouchPopMenuAction)
     {
         actions.append(action)
         initActions()
@@ -353,7 +353,7 @@ class TouchPopMenu : UIView
     /*
      Remove an action from the menu
      */
-    func removeAction(action: TouchPopMenuAction)
+    public func removeAction(action: TouchPopMenuAction)
     {
         actions = actions.filter() { $0 !== action }
         initActions()
@@ -362,7 +362,7 @@ class TouchPopMenu : UIView
     /*
      Remove all actions from the menu
      */
-    func removeAllActions()
+    public func removeAllActions()
     {
         actions.removeAll()
         initActions()
@@ -397,7 +397,7 @@ class TouchPopMenu : UIView
         setNeedsDisplay()
     }
 
-    override func layoutSubviews()
+    override public func layoutSubviews()
     {
         super.layoutSubviews()
 
@@ -422,7 +422,7 @@ class TouchPopMenu : UIView
         NSLog("touched ...")
     }
     
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
+    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
     {
         NSLog("touchesBegan ...")
         if let touch = touches.first
@@ -433,7 +433,7 @@ class TouchPopMenu : UIView
         }
     }
 
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)
+    override public func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)
     {
         NSLog("touchesMoved ...")
         if let touch = touches.first
@@ -444,7 +444,7 @@ class TouchPopMenu : UIView
         }
     }
     
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?)
+    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?)
     {
         NSLog("touchesEnded ...")
         if let touch = touches.first

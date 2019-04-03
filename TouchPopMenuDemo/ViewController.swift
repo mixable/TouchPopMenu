@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import TouchPopMenu
 
 class ViewController: UIViewController
 {
@@ -20,7 +21,7 @@ class ViewController: UIViewController
     {
         super.loadView()
         
-        let menu = TouchPopMenu(pointTo: buttonCenter)
+        let menu = TouchPopMenu(pointTo: buttonCenter!)
         menu.position = .auto
         menu.addAction(action: TouchPopMenuAction(title: "Copy"))
         menu.addAction(action: TouchPopMenuAction(title: "Paste"))

@@ -1,9 +1,9 @@
 //
 //  AppDelegate.swift
-//  TouchPopMenu
+//  TouchPopMenuDemo
 //
-//  Created by Mathias Lipowski on 01.04.19.
-//  Copyright © 2019 Mathias Lipowski. All rights reserved.
+//  Created by Mathias Lipowski on 03.04.19.
+//  Copyright © 2019 mixable. All rights reserved.
 //
 
 import UIKit
