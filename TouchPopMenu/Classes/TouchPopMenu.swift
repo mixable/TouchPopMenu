@@ -8,7 +8,7 @@
 
 import UIKit
 
-public class TouchPopMenu : UIView
+public class TouchPopMenu : UIView, TouchHandlerDelegate
 {
     /*
      Position of the menu
@@ -61,6 +61,11 @@ public class TouchPopMenu : UIView
     public var menuColor : UIColor = .white
 
     /*
+     Background color of the selected action
+     */
+    public var selectedColor : UIColor = UIColor(red: 0.95, green: 0.95, blue: 0.95, alpha: 1.0)
+
+    /*
      Text color of the menu actions
      */
     public var textColor : UIColor = .black
@@ -101,6 +106,11 @@ public class TouchPopMenu : UIView
     public var animationOffset : CGFloat = 10
 
     /*
+     Returns true if menu is open
+     */
+    public var isOpen : Bool = false
+    
+    /*
      Source to attach the menu
      */
     private var source : Source = .view
@@ -118,6 +128,7 @@ public class TouchPopMenu : UIView
      Menu views
      */
     private var containerView : UIView?
+    private var touchView : TouchHandlerView = TouchHandlerView()
     private var contentView : UIView?
     private var arrowView : ArrowView?
 
@@ -168,7 +179,19 @@ public class TouchPopMenu : UIView
         clipsToBounds = false
         layer.masksToBounds = false
         layer.backgroundColor = overlayColor.cgColor
-
+        
+        // Create touch view
+        touchView.frame = sourceFrame
+        touchView.backgroundColor = .clear
+        touchView.touchDelegate = self
+        
+        if source == .view {
+            sourceView?.superview?.addSubview(touchView)
+        }
+        if source == .button {
+            sourceButton?.superview?.addSubview(touchView)
+        }
+        
         // Create container view
         containerView = UIView(frame: UIScreen.main.bounds)
         containerView!.layer.masksToBounds = false
@@ -201,18 +224,10 @@ public class TouchPopMenu : UIView
         if source == .view {
             sourceView?.superview?.addSubview(self)
             setNeedsLayout()
-
-            let recognizer = TouchGestureRecognizer(target:self,
-                                                    action:#selector(touched))
-            sourceView?.addGestureRecognizer(recognizer)
         }
         if source == .button {
             sourceButton?.superview?.addSubview(self)
             setNeedsLayout()
-
-            let recognizer = TouchGestureRecognizer(target:self,
-                                                    action:#selector(touched))
-            sourceButton?.addGestureRecognizer(recognizer)
         }
     }
     
@@ -249,13 +264,21 @@ public class TouchPopMenu : UIView
             layer.opacity = 0
             isHidden = false
         }
-
+        
         UIView.animate(withDuration: self.animationDuration, delay: 0, options: [.curveEaseIn], animations: {
             self.containerView!.frame.origin.x = 0
             self.containerView!.frame.origin.y = 0
             self.containerView!.layer.opacity = 1
             self.layer.opacity = 1
         })
+
+        isOpen = true
+        
+        // Haptic feedback
+        if #available(iOS 10.0, *) {
+            let generator = UISelectionFeedbackGenerator()
+            generator.selectionChanged()
+        }
     }
     
     /*
@@ -294,6 +317,8 @@ public class TouchPopMenu : UIView
         }, completion: { (finished: Bool) in
             self.isHidden = true
         })
+
+        isOpen = false
     }
     
     /*
@@ -471,34 +496,41 @@ public class TouchPopMenu : UIView
         contentSize = CGSize.zero
 
         // Create views for each action
-        var row = 0
-        for action in actions
+        for (index, action) in actions.enumerated()
         {
             let size: CGSize = action.title.size(withAttributes: [
                 NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14.0)
             ])
+            let actionView = UIView(frame: CGRect(x: 0,
+                                                  y: contentSize.height,
+                                                  width: size.width + labelInset * 2,
+                                                  height: labelHeight))
+
+            // Use tag to retrieve action for this view
+            actionView.tag = index
+
             let label = UILabel(frame: CGRect(x: labelInset,
-                                              y: contentSize.height,
+                                              y: 0,
                                               width: size.width,
                                               height: labelHeight))
             label.font = UIFont.systemFont(ofSize: 14.0)
             label.text = action.title
             label.textColor = textColor
+            actionView.addSubview(label)
             
             // Add border (= top border of label)
-            if row > 0 {
+            if index > 0 {
                 let borderLayer = CALayer()
                 borderLayer.frame = CGRect(x: 0, y: contentSize.height, width: label.frame.width, height: 1)
                 borderLayer.backgroundColor = dividerColor.cgColor
                 contentView!.layer.addSublayer(borderLayer)
             }
 
-            contentView!.addSubview(label)
+            contentView!.addSubview(actionView)
             contentSize.height += labelHeight
             if size.width + (labelInset * 2) > contentSize.width {
                 contentSize.width = size.width + (labelInset * 2)
             }
-            row += 1
         }
         setNeedsDisplay()
     }
@@ -519,58 +551,129 @@ public class TouchPopMenu : UIView
         for divider in contentView!.layer.sublayers! {
             divider.frame.size.width = contentSize.width
         }
-                                    
+        for subviews in contentView!.subviews {
+            subviews.frame.size.width = contentSize.width
+        }
+
         arrowView!.origin = arrowOrigin
         arrowView!.position = menuPosition
         arrowView!.setNeedsLayout()
         arrowView!.setNeedsDisplay()
     }
-
-    @objc func touched()
-    {
-        // do something here
-        show()
-        NSLog("touched ...")
-    }
     
-    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
-    {
-        NSLog("touchesBegan ...")
-        if let touch = touches.first
-        {
-            let point = touch.location(in: self)
-            if (sourceFrame.contains(point)) {
-            }
-        }
-    }
-
-    override public func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)
-    {
-        NSLog("touchesMoved ...")
-        if let touch = touches.first
-        {
-            let point = touch.location(in: self)
-            if (sourceFrame.contains(point)) {
-            }
+    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            touchBegan(touch)
         }
     }
     
-    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?)
-    {
-        NSLog("touchesEnded ...")
-        if let touch = touches.first
-        {
-            let point = touch.location(in: self)
+    override public func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            touchMoved(touch)
+        }
+    }
+    
+    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            touchEnded(touch)
+        }
+    }
 
-            // Hide when on sourceView
-            if (sourceFrame.contains(point)) {
+    public func menuTouchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            touchBegan(touch)
+        }
+    }
+    
+    public func menuTouchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            touchMoved(touch)
+        }
+    }
+    
+    public func menuTouchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            touchEnded(touch)
+        }
+    }
+    
+    private var movedOutOfSourceButton = false
+    
+    private func touchBegan(_ touch: UITouch)
+    {
+        let point = touch.location(in: self)
+        if touchView.frame.contains(point) {
+            if !isOpen {
+                show()
+            }
+            else {
                 hide()
             }
-            // Hide when outside of menu
-            let contentFrame = contentView?.frame
-            let arrowFrame = arrowView?.frame
-            if (!arrowFrame!.contains(point) && !contentFrame!.contains(point)) {
+        }
+        
+        movedOutOfSourceButton = false
+    }
+    
+    private func touchMoved(_ touch: UITouch)
+    {
+        let point = touch.location(in: self)
+        if (sourceFrame.contains(point)) {
+            movedOutOfSourceButton = true
+        }
+        // Check if action is selected
+        if isOpen {
+            for subview in contentView!.subviews {
+                let subviewInSelf = subview.convert(subview.bounds, to: self)
+                if subviewInSelf.contains(point)
+                {
+                    subview.backgroundColor = selectedColor
+
+                    // Haptic feedback
+                    if #available(iOS 10.0, *) {
+                        let generator = UISelectionFeedbackGenerator()
+                        generator.selectionChanged()
+                    }
+                }
+                else {
+                    subview.backgroundColor = .clear
+                }
+            }
+        }
+    }
+    
+    private func touchEnded(_ touch: UITouch)
+    {
+        let point = touch.location(in: self)
+        
+        let contentFrame = contentView?.frame
+        let arrowFrame = arrowView?.frame
+        let touchFrame = touchView.frame
+        
+        // Hide when on "source" view
+        if touchFrame.contains(point) {
+            if isOpen {
                 hide()
+            }
+        }
+        // Hide when moved outside of menu
+        if !arrowFrame!.contains(point) && !contentFrame!.contains(point) && !touchFrame.contains(point) {
+            if isOpen {
+                hide()
+            }
+        }
+        // Check if action is selected
+        if isOpen {
+            for subview in contentView!.subviews {
+                let subviewInSelf = subview.convert(subview.bounds, to: self)
+                if subviewInSelf.contains(point) {
+                    if actions.indices.contains(subview.tag) {
+                        let action = actions[subview.tag]
+                        action.selected()
+                    }
+                    subview.backgroundColor = .clear
+                    hide()
+                    break
+                }
             }
         }
     }

@@ -11,10 +11,13 @@ import UIKit
 
 public class TouchPopMenuAction
 {
-    public var title: String
+    public var title : String
+    public var selected : () -> ()
     
-    public init(title: String)
+    public init(title: String,
+                selected: @escaping () -> () )
     {
         self.title = title
+        self.selected = selected
     }
 }

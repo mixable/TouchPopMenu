@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
   #
 
   spec.name         = "TouchPopMenu"
-  spec.version      = "0.0.1-alpha"
+  spec.version      = "0.0.2"
   spec.summary      = "A touchable popover menu for iOS made in Swift."
 
   # This description is used to generate tags and improve search results.

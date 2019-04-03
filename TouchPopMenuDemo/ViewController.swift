@@ -21,36 +21,40 @@ class ViewController: UIViewController
     {
         super.loadView()
         
+        let handlerBlock: () -> () = {
+            print("Selected action!")
+        }
+        
         let menu = TouchPopMenu(pointTo: buttonCenter!)
         menu.position = .auto
-        menu.addAction(action: TouchPopMenuAction(title: "Copy"))
-        menu.addAction(action: TouchPopMenuAction(title: "Paste"))
-        menu.addAction(action: TouchPopMenuAction(title: "Undo last action"))
+        menu.addAction(action: TouchPopMenuAction(title: "Copy", selected: handlerBlock))
+        menu.addAction(action: TouchPopMenuAction(title: "Paste", selected: handlerBlock))
+        menu.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: handlerBlock))
         menu.show()
 
         let menu1 = TouchPopMenu(pointTo: buttonTopLeft)
         menu1.position = .auto
-        menu1.addAction(action: TouchPopMenuAction(title: "Copy"))
-        menu1.addAction(action: TouchPopMenuAction(title: "Paste"))
-        menu1.addAction(action: TouchPopMenuAction(title: "Undo last action"))
+        menu1.addAction(action: TouchPopMenuAction(title: "Copy", selected: handlerBlock))
+        menu1.addAction(action: TouchPopMenuAction(title: "Paste", selected: handlerBlock))
+        menu1.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: handlerBlock))
 
         let menu2 = TouchPopMenu(pointTo: buttonTopRight)
         menu2.position = .auto
-        menu2.addAction(action: TouchPopMenuAction(title: "Copy"))
-        menu2.addAction(action: TouchPopMenuAction(title: "Paste"))
-        menu2.addAction(action: TouchPopMenuAction(title: "Undo last action"))
+        menu2.addAction(action: TouchPopMenuAction(title: "Copy", selected: handlerBlock))
+        menu2.addAction(action: TouchPopMenuAction(title: "Paste", selected: handlerBlock))
+        menu2.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: handlerBlock))
 
         let menu3 = TouchPopMenu(pointTo: buttonBottomLeft)
         menu3.position = .auto
-        menu3.addAction(action: TouchPopMenuAction(title: "Copy"))
-        menu3.addAction(action: TouchPopMenuAction(title: "Paste"))
-        menu3.addAction(action: TouchPopMenuAction(title: "Undo last action"))
+        menu3.addAction(action: TouchPopMenuAction(title: "Copy", selected: handlerBlock))
+        menu3.addAction(action: TouchPopMenuAction(title: "Paste", selected: handlerBlock))
+        menu3.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: handlerBlock))
 
         let menu4 = TouchPopMenu(pointTo: buttonBottomRight)
         menu4.position = .auto
-        menu4.addAction(action: TouchPopMenuAction(title: "Copy"))
-        menu4.addAction(action: TouchPopMenuAction(title: "Paste"))
-        menu4.addAction(action: TouchPopMenuAction(title: "Undo last action"))
+        menu4.addAction(action: TouchPopMenuAction(title: "Copy", selected: handlerBlock))
+        menu4.addAction(action: TouchPopMenuAction(title: "Paste", selected: handlerBlock))
+        menu4.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: handlerBlock))
     }
     
     override func viewDidLoad() {
