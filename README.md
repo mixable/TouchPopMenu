@@ -20,7 +20,7 @@ A touchable popover menu for iOS made in Swift.
 
 ### Properties
 
-* [.cornerRadius](#property-cornerRadius)
+* [.cornerRadius](#property-cornerradius)
 * [.position](#property-position)
 
 
