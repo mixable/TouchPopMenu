@@ -20,6 +20,18 @@ A touchable popover menu for iOS made in Swift.
 
 ### Properties
 
+* [.cornerRadius](#property-cornerRadius)
+* [.position](#property-position)
+
+
+#### Property `.cornerRadius`
+
+Type: `CGFloat`
+
+Default: `10.0`
+
+The corner radius of the menu content view.
+
 #### Property `.position`
 
 Type: `TouchPopMenu.Position`
