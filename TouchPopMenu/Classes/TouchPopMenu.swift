@@ -443,7 +443,17 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
                 }
                 return CGPoint(x: x, y: y)
             }
-            if menuPosition == .up {
+            else if menuPosition == .leftUp {
+                let x = sourceCenter.x - (sourceSize.width / 2) - arrowLength - contentSize.width
+                let y = sourceCenter.y - contentSize.height + arrowLength + cornerRadius
+                return CGPoint(x: x, y: y)
+            }
+            else if menuPosition == .leftDown {
+                let x = sourceCenter.x - (sourceSize.width / 2) - arrowLength - contentSize.width
+                let y = sourceCenter.y - arrowLength - cornerRadius
+                return CGPoint(x: x, y: y)
+            }
+            else if menuPosition == .up {
                 var x = sourceCenter.x - (contentSize.width / 2)
                 let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - contentSize.height
                 if x < screenInset {
@@ -454,7 +464,17 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
                 }
                 return CGPoint(x: x, y: y)
             }
-            if menuPosition == .right {
+            else if menuPosition == .upLeft {
+                let x = sourceCenter.x - contentSize.width + arrowLength + cornerRadius
+                let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - contentSize.height
+                return CGPoint(x: x, y: y)
+            }
+            else if menuPosition == .upRight {
+                let x = sourceCenter.x - arrowLength - cornerRadius
+                let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - contentSize.height
+                return CGPoint(x: x, y: y)
+            }
+            else if menuPosition == .right {
                 let x = sourceCenter.x + (sourceSize.width / 2) + arrowLength
                 var y = sourceCenter.y - (contentSize.height / 2)
                 if y < screenInset {
@@ -465,7 +485,17 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
                 }
                 return CGPoint(x: x, y: y)
             }
-            if menuPosition == .down {
+            else if menuPosition == .rightUp {
+                let x = sourceCenter.x + (sourceSize.width / 2) + arrowLength
+                let y = sourceCenter.y - contentSize.height + arrowLength + cornerRadius
+                return CGPoint(x: x, y: y)
+            }
+            else if menuPosition == .rightDown {
+                let x = sourceCenter.x + (sourceSize.width / 2) + arrowLength
+                let y = sourceCenter.y - arrowLength - cornerRadius
+                return CGPoint(x: x, y: y)
+            }
+            else if menuPosition == .down {
                 var x = sourceCenter.x - (contentSize.width / 2)
                 let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
                 if x < screenInset {
@@ -474,6 +504,16 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
                 if x + contentSize.width > screenSize.width - screenInset {
                     x = screenSize.width - contentSize.width - screenInset
                 }
+                return CGPoint(x: x, y: y)
+            }
+            else if menuPosition == .downLeft {
+                let x = sourceCenter.x - contentSize.width + arrowLength + cornerRadius
+                let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
+                return CGPoint(x: x, y: y)
+            }
+            else if menuPosition == .downRight {
+                let x = sourceCenter.x - arrowLength - cornerRadius
+                let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
                 return CGPoint(x: x, y: y)
             }
             return CGPoint.zero
