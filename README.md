@@ -20,17 +20,31 @@ A touchable popover menu for iOS made in Swift.
 
 ### Properties
 
-* [.cornerRadius](#property-cornerradius)
+Configuration properties:
+
 * [.position](#property-position)
 
+Dimensions:
 
-#### Property `.cornerRadius`
+* [.arrowLength](#property-arrowlength)
+* [.cornerRadius](#property-cornerradius)
+* [.labelHeight](#property-labelheight)
+* [.labelInset](#property-labelinset)
+* [.screenInset](#property-screeninset)
 
-Type: `CGFloat`
+Color customization:
 
-Default: `10.0`
+* [.dividerColor](#property-dividercolor)
+* [.menuColor](#property-menucolor)
+* [.overlayColor](#property-overlaycolor)
+* [.selectedColor](#property-selectedcolor)
+* [.textColor](#property-textcolor)
 
-The corner radius of the menu content view.
+Animation:
+
+* [.animationDuration](#property-animationduration)
+* [.animationOffset](#property-animationoffset)
+
 
 #### Property `.position`
 
@@ -56,3 +70,111 @@ Value | Description
 `.rightDown` | Show menu on the **right** of the source view, directed **down**
 `.downLeft` | Show menu **below** the source view, directed to the **left**
 `.downRight` | Show menu **below** the source view, directed to the **right**
+
+
+#### Property `.arrowLength`
+
+Type: `CGFloat`
+
+Default: `15.0`
+
+Size of the arrow triangle.
+
+
+#### Property `.cornerRadius`
+
+Type: `CGFloat`
+
+Default: `10.0`
+
+The corner radius of the menu content view.
+
+
+#### Property `.labelHeight`
+
+Type: `CGFloat`
+
+Default: `40.0`
+
+The height of the action labels.
+
+
+#### Property `.labelInset`
+
+Type: `CGFloat`
+
+Default: `15.0`
+
+The horizontal spacing of label text.
+
+
+#### Property `.screenInset`
+
+Type: `CGFloat`
+
+Default: `8.0`
+
+Space between menu and screen edges.
+
+
+#### Property `.dividerColor`
+
+Type: `UIColor`
+
+Default: `UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 1.0)`
+
+The color of the menu action divider.
+
+
+#### Property `.menuColor`
+
+Type: `UIColor`
+
+Default: `.white`
+
+The background color of the menu content view.
+
+
+#### Property `.overlayColor`
+
+Type: `UIColor`
+
+Default: `UIColor(white: 0.0, alpha: 0.05)`
+
+The background color of the overlay view.
+
+
+#### Property `.selectedColor`
+
+Type: `UIColor`
+
+Default: `UIColor(red: 0.95, green: 0.95, blue: 0.95, alpha: 1.0)`
+
+The background color of the selected action.
+
+
+#### Property `.textColor`
+
+Type: `UIColor`
+
+Default: `.black`
+
+The color of the action text.
+
+
+#### Property `.animationDuration`
+
+Type: `TimeInterval`
+
+Default: `0.15`
+
+The duration of the show/hide animations.
+
+
+#### Property `.animationOffset`
+
+Type: `CGFloat`
+
+Default: `10.0`
+
+Moving offset of the show/hide animations.
