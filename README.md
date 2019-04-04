@@ -14,10 +14,38 @@ A touchable popover menu for iOS made in Swift.
 
 ## Example usage
 
-...
+Below is a simple example how to attach TouchPopMenu to an UIButton. This also works with every UIView.
+
+```swift
+// A button to attach the menu
+let myButton = UIButton()
+myButton.setTitle("Touch Me", forState: .Normal)
+myButton.frame = CGRectMake(0, 0, 100, 50)
+self.view.addSubview(myButton)
+
+// Create menu
+let menu = TouchPopMenu(pointTo: myButton)
+menu.position = .auto
+
+// Add actions
+menu.addAction(action: TouchPopMenuAction(title: "Copy", selected: handlerBlock))
+menu.addAction(action: TouchPopMenuAction(title: "Paste", selected: handlerBlock))
+menu.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: handlerBlock))
+```
+
+TouchPoMenu handles all the touch events by its own. To manually show or hide the menu, you can use the following methods:
+
+```swift
+// Show or hide TouchPopMenu manually
+menu.show()
+menu.hide()
+```
+
 
 ## Configuration and customization
 
 For a full list of all properties and settings, please refer to our [wiki](https://github.com/mixable/TouchPopMenu/wiki/Configuration-and-customization).
 
 ## Changelog
+
+...
