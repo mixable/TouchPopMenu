@@ -187,9 +187,11 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
         
         if source == .view {
             sourceView?.superview?.addSubview(touchView)
+            sourceView?.superview?.bringSubviewToFront(touchView)
         }
         if source == .button {
             sourceButton?.superview?.addSubview(touchView)
+            sourceButton?.superview?.bringSubviewToFront(touchView)
         }
         
         // Create container view
@@ -223,10 +225,12 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
 
         if source == .view {
             sourceView?.superview?.addSubview(self)
+            sourceView?.superview?.sendSubviewToBack(self)
             setNeedsLayout()
         }
         if source == .button {
             sourceButton?.superview?.addSubview(self)
+            sourceButton?.superview?.sendSubviewToBack(self)
             setNeedsLayout()
         }
     }
@@ -236,6 +240,13 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
      */
     public func show()
     {
+        if source == .view {
+            sourceView?.superview?.bringSubviewToFront(self)
+        }
+        if source == .button {
+            sourceButton?.superview?.bringSubviewToFront(self)
+        }
+
         if menuPosition == .left || menuPosition == .leftUp || menuPosition == .leftDown
         {
             containerView!.layer.opacity = 0
@@ -316,6 +327,13 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
             }
         }, completion: { (finished: Bool) in
             self.isHidden = true
+            
+            if self.source == .view {
+                self.sourceView?.superview?.sendSubviewToBack(self)
+            }
+            if self.source == .button {
+                self.sourceButton?.superview?.sendSubviewToBack(self)
+            }
         })
 
         isOpen = false
@@ -541,8 +559,8 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
 
         // Update frames
         frame = UIScreen.main.bounds
+        touchView.frame = sourceFrame
         containerView!.frame = UIScreen.main.bounds
-
         contentView!.frame = CGRect(x: contentOrigin.x,
                                     y: contentOrigin.y,
                                     width: contentSize.width,
@@ -651,7 +669,7 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
         
         // Hide when on "source" view
         if touchFrame.contains(point) {
-            if isOpen {
+            if isOpen && movedOutOfSourceButton {
                 hide()
             }
         }
