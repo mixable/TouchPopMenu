@@ -8,6 +8,9 @@
 # TouchPopMenu
 A touchable popover menu for iOS made in Swift.
 
+This library is still under development and not ready for use!
+{: .alert .alert-gitlab-orange}
+
 ## Installation
 Using CocoaPods, add the pod to your podfile:
 ```
