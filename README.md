@@ -8,51 +8,62 @@
 # TouchPopMenu
 A touchable popover menu for iOS made in Swift.
 
-## Installation
+**Warning: this library is still under development and not ready for use!**
 
-...
+## Installation
+Using CocoaPods, add the pod to your podfile:
+```
+pod 'TouchPopMenu'
+```
 
 ## Example usage
+Below is a simple example how to attach TouchPopMenu to an UIButton. This also works with every other UIView.
 
-...
+```swift
+// A source view to attach the menu
+let myButton = UIButton()
+myButton.setTitle("Touch Me", forState: .Normal)
+myButton.frame = CGRectMake(0, 0, 100, 50)
+self.view.addSubview(myButton)
+
+// Create menu
+let menu = TouchPopMenu(pointTo: myButton)
+menu.position = .auto
+
+// Add actions
+menu.addAction(action: TouchPopMenuAction(title: "Copy", selected: nil))
+menu.addAction(action: TouchPopMenuAction(title: "Paste", selected: nil))
+menu.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: nil))
+```
+
+TouchPopMenu handles all the touch events by its own. To manually show or hide the menu, you can use the following methods:
+
+```swift
+// Show or hide TouchPopMenu manually
+menu.show()
+menu.hide()
+```
 
 ## Configuration and customization
 
-### Properties
+For a full list of all properties and settings, please refer to the [wiki](https://github.com/mixable/TouchPopMenu/wiki/Configuration-and-customization).
 
-* [.cornerRadius](#property-cornerradius)
-* [.position](#property-position)
+## Changelog
 
+...
 
-#### Property `.cornerRadius`
+## In the wild
 
-Type: `CGFloat`
+...
 
-Default: `10.0`
+## License
 
-The corner radius of the menu content view.
+The MIT License (MIT)
 
-#### Property `.position`
+Copyright (c) 2019 Mathias Lipowski
 
-Type: `TouchPopMenu.Position`
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-Default: `.auto`
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-Defines the position of the menu related to the source view.
-Normall it should be enough to use the main directions `.left`, `.up`, `.right` and `.down` to define the position of the menu. For those, the menu position will be automatically adjusted if it is close to the screen bounds. If you use the more precise positions (`.leftUp`, `.leftDown`, ...) this adjustment is not performed. In this case you need to make sure, that the menu size fits into the screen.
-
-Value | Description
---- | ---
-`.auto` | Automatically set the position of the menu related to the source view **(default)**
-`.left` | Show menu on the **left** of the source view
-`.up` | Show menu **above** the source view
-`.right` | Show menu on the **right** of the source view
-`.down` | Show menu **below** the source view
-`.leftUp` | Show menu on the **left** of the source view, directed **up**
-`.leftDown` | Show menu on the **left** of the source view, directed **down**
-`.upLeft` | Show menu **above** the source view, directed to the **left**
-`.upRight` | Show menu **above** the source view, directed to the **right**
-`.rightUp` | Show menu on the **right** of the source view, directed **up**
-`.rightDown` | Show menu on the **right** of the source view, directed **down**
-`.downLeft` | Show menu **below** the source view, directed to the **left**
-`.downRight` | Show menu **below** the source view, directed to the **right**
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
