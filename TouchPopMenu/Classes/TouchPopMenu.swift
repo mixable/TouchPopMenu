@@ -668,7 +668,7 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
                 if subviewInSelf.contains(point) {
                     if actions.indices.contains(subview.tag) {
                         let action = actions[subview.tag]
-                        action.selected()
+                        action.selected(self)
                     }
                     subview.backgroundColor = .clear
                     hide()
