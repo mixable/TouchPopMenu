@@ -672,6 +672,8 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
         movedOutOfSourceButton = false
     }
     
+    private var selectedAction : Int? = nil
+    
     private func touchMoved(_ touch: UITouch)
     {
         let point = touch.location(in: self)
@@ -680,21 +682,28 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
         }
         // Check if action is selected
         if isOpen {
+            var selectedNow : Int? = nil
             for subview in contentView!.subviews {
                 let subviewInSelf = subview.convert(subview.bounds, to: self)
                 if subviewInSelf.contains(point)
                 {
                     subview.backgroundColor = selectedColor
-
-                    // Haptic feedback
-                    if #available(iOS 10.0, *) {
-                        let generator = UISelectionFeedbackGenerator()
-                        generator.selectionChanged()
-                    }
+                    selectedNow = subview.tag
                 }
                 else {
                     subview.backgroundColor = .clear
                 }
+            }
+            
+            if selectedNow != selectedAction {
+                // Haptic feedback
+                if #available(iOS 10.0, *) {
+                    if selectedNow != nil {
+                        let generator = UISelectionFeedbackGenerator()
+                        generator.selectionChanged()
+                    }
+                }
+                selectedAction = selectedNow
             }
         }
     }
