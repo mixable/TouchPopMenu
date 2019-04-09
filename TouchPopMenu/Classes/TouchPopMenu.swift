@@ -8,7 +8,7 @@
 
 import UIKit
 
-public class TouchPopMenu : UIView, TouchHandlerDelegate
+public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
 {
     /*
      Position of the menu
@@ -34,7 +34,7 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
     /*
      Type of source
      */
-    public enum Source {
+    public enum SourceType {
         case view
         case button
         case barButtonItem
@@ -46,19 +46,27 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
     public var position : Position = .auto
 
     /*
-     Corner radius of menu content view
+     Corner radius of menu view
      */
     public var cornerRadius : CGFloat = 10.0
 
     /*
      Background color of the overlay view
      */
-    public var overlayColor : UIColor = UIColor(white: 0.0, alpha: 0.05)
+    public var overlayColor : UIColor = UIColor(white: 0.0, alpha: 0.05) {
+        didSet {
+            applyTheme()
+        }
+    }
 
     /*
-     Background color of the menu content view
+     Background color of the menu view
      */
-    public var menuColor : UIColor = .white
+    public var menuColor : UIColor = .white {
+        didSet {
+            applyTheme()
+        }
+    }
 
     /*
      Background color of the selected action
@@ -68,12 +76,20 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
     /*
      Text color of the menu actions
      */
-    public var textColor : UIColor = .black
+    public var textColor : UIColor = .black {
+        didSet {
+            applyTheme()
+        }
+    }
     
     /*
      Text color of the menu action divider
      */
-    public var dividerColor : UIColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 1.0)
+    public var dividerColor : UIColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 1.0) {
+        didSet {
+            applyTheme()
+        }
+    }
     
     /*
      Size of the arrow triangle
@@ -83,13 +99,22 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
     /*
      Height of action labels
      */
-    public var labelHeight : CGFloat = 40.0
+    public var labelHeight : CGFloat = 46.0
     
     /*
      Horizontal spacing of label text
      */
     public var labelInset : CGFloat = 15.0
 
+    /*
+     Font of action labels
+     */
+    public var labelFont : UIFont = UIFont.systemFont(ofSize: 16.0) {
+        didSet {
+            applyTheme()
+        }
+    }
+    
     /*
      Space between menu and screen edges
      */
@@ -110,14 +135,47 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
      */
     public var isOpen : Bool = false
     
+    // MARK: Private parameters
+
+    /*
+     Controller to attach the menu
+     */
+    private var controller : UIViewController
+    
     /*
      Source to attach the menu
      */
-    private var source : Source = .view
+    private var sourceType : SourceType = .view
     
     private var sourceView : UIView?
     private var sourceButton : UIButton?
     private var sourceBarButtonItem : UIBarButtonItem?
+    
+    private var source : Any? {
+        get {
+            switch sourceType {
+            case .view:
+                return sourceView
+            case .button:
+                return sourceButton
+            case .barButtonItem:
+                return sourceBarButtonItem
+            }
+        }
+    }
+    
+    private var sourceSuperview : UIView? {
+        get {
+            switch sourceType {
+            case .view:
+                return sourceView?.superview
+            case .button:
+                return sourceButton?.superview
+            case .barButtonItem:
+                return (sourceBarButtonItem!.value(forKey: "view") as? UIView)!.superview
+            }
+        }
+    }
 
     /*
      Actions
@@ -127,42 +185,58 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
     /*
      Menu views
      */
-    private var containerView : UIView?
-    private var touchView : TouchHandlerView = TouchHandlerView()
+    private var overlayView : TouchHandlerView?
+    private var shadowView : UIView?
+    private var positionView : UIView?
     private var contentView : UIView?
+    private var menuView : UIView?
     private var arrowView : ArrowView?
-
-    private var contentSize : CGSize = CGSize.zero
+    
+    private var menuSize : CGSize = CGSize.zero
+    
+    /*
+     Window to add menu
+     */
+    private var sourceWindow : UIWindow? {
+        get {
+            return (UIApplication.shared.delegate?.window)!
+        }
+    }
+    
+    // MARK: Init
     
     /*
      Init
      */
-    public init(pointTo view: UIView)
+    public init(pointTo view: UIView, inController controller: UIViewController)
     {
-        source = .view
-        sourceView = view
+        self.sourceType = .view
+        self.sourceView = view
+        self.controller = controller
         
-        super.init(frame: UIScreen.main.bounds)
+        super.init(frame: CGRect.zero)
 
         layoutMenu()
     }
 
-    public init(pointTo button: UIButton)
+    public init(pointTo button: UIButton, inController controller: UIViewController)
     {
-        source = .button
-        sourceButton = button
+        self.sourceType = .button
+        self.sourceButton = button
+        self.controller = controller
 
-        super.init(frame: UIScreen.main.bounds)
+        super.init(frame: CGRect.zero)
         
         layoutMenu()
     }
     
-    public init(pointTo barButtonItem: UIBarButtonItem)
+    public init(pointTo barButtonItem: UIBarButtonItem, inController controller: UIViewController)
     {
-        source = .barButtonItem
-        sourceBarButtonItem = barButtonItem
+        self.sourceType = .barButtonItem
+        self.sourceBarButtonItem = barButtonItem
+        self.controller = controller
 
-        super.init(frame: UIScreen.main.bounds)
+        super.init(frame: CGRect.zero)
         
         layoutMenu()
     }
@@ -175,112 +249,353 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
      */
     private func layoutMenu()
     {
-        isHidden = true
+        // Create touch view (self)
         clipsToBounds = false
+        translatesAutoresizingMaskIntoConstraints = false
+        backgroundColor = .clear
         layer.masksToBounds = false
-        layer.backgroundColor = overlayColor.cgColor
+        touchDelegate = self
         
-        // Create touch view
-        touchView.frame = sourceFrame
-        touchView.backgroundColor = .clear
-        touchView.touchDelegate = self
+        // Check if position changes and menu needs to be repositioned
+        addObserver(self, forKeyPath: "center", options: .new, context: nil)
+
+        sourceSuperview?.addSubview(self)
+        sourceSuperview?.bringSubviewToFront(self)
+        sourceSuperview?.addConstraints([
+            NSLayoutConstraint(item: self, attribute: .leading, relatedBy: .equal, toItem: source, attribute: .leading, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: self, attribute: .trailing, relatedBy: .equal, toItem: source, attribute: .trailing, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: self, attribute: .top, relatedBy: .equal, toItem: source, attribute: .top, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: self, attribute: .bottom, relatedBy: .equal, toItem: source, attribute: .bottom, multiplier: 1, constant: 0)
+            ])
+
+        // Create overlay view
+        overlayView = TouchHandlerView(frame: controller.view.bounds)
+        overlayView!.layer.backgroundColor = overlayColor.cgColor
+        overlayView!.isHidden = true
+        overlayView!.touchDelegate = self
+        sourceWindow!.addSubview(overlayView!)
+
+        overlayView!.translatesAutoresizingMaskIntoConstraints = false
+        overlayView!.leftAnchor.constraint(equalTo: sourceWindow!.leftAnchor, constant: 0).isActive = true
+        overlayView!.topAnchor.constraint(equalTo: sourceWindow!.topAnchor, constant: 0).isActive = true
+        overlayView!.rightAnchor.constraint(equalTo: sourceWindow!.rightAnchor, constant: 0).isActive = true
+        overlayView!.bottomAnchor.constraint(equalTo: sourceWindow!.bottomAnchor, constant: 0).isActive = true
         
-        if source == .view {
-            sourceView?.superview?.addSubview(touchView)
-            sourceView?.superview?.bringSubviewToFront(touchView)
-        }
-        if source == .button {
-            sourceButton?.superview?.addSubview(touchView)
-            sourceButton?.superview?.bringSubviewToFront(touchView)
-        }
+        // Create shadow view
+        shadowView = UIView(frame: UIScreen.main.bounds)
+        shadowView!.layer.masksToBounds = false
+        shadowView!.layer.backgroundColor = UIColor.clear.cgColor
+        shadowView!.layer.shadowColor = UIColor.black.cgColor
+        shadowView!.layer.shadowOffset = CGSize.zero
+        shadowView!.layer.shadowOpacity = 0.1
+        shadowView!.layer.shadowRadius = 25.0
+        overlayView!.addSubview(shadowView!)
+
+        shadowView!.translatesAutoresizingMaskIntoConstraints = false
+        shadowView!.leftAnchor.constraint(equalTo: overlayView!.leftAnchor, constant: 0).isActive = true
+        shadowView!.topAnchor.constraint(equalTo: overlayView!.topAnchor, constant: 0).isActive = true
+        shadowView!.rightAnchor.constraint(equalTo: overlayView!.rightAnchor, constant: 0).isActive = true
+        shadowView!.bottomAnchor.constraint(equalTo: overlayView!.bottomAnchor, constant: 0).isActive = true
         
-        // Create container view
-        containerView = UIView(frame: UIScreen.main.bounds)
-        containerView!.layer.masksToBounds = false
-        containerView!.layer.backgroundColor = UIColor.clear.cgColor
-        containerView!.layer.shadowColor = UIColor.black.cgColor
-        containerView!.layer.shadowOffset = CGSize.zero
-        containerView!.layer.shadowOpacity = 0.1
-        containerView!.layer.shadowRadius = 25.0
-        containerView!.layer.shouldRasterize = true
-        addSubview(containerView!)
-        
+        // Create shadow view
+        positionView = UIView(frame: convert(self.bounds, to: overlayView))
+        positionView!.backgroundColor = .clear
+        shadowView!.addSubview(positionView!)
+
         // Create content view
         contentView = UIView()
-        contentView!.layer.cornerRadius = cornerRadius;
-        contentView!.layer.masksToBounds = true;
-        contentView!.backgroundColor = menuColor
-        containerView!.addSubview(contentView!)
-            
+        contentView!.layer.masksToBounds = false
+        contentView!.translatesAutoresizingMaskIntoConstraints = false
+        contentView!.backgroundColor = .clear
+        shadowView!.addSubview(contentView!)
+
         // Create arrow view
-        arrowView = ArrowView(origin: CGPoint(x: arrowOrigin.x, y: arrowOrigin.y),
+        arrowView = ArrowView(pointTo: positionView!,
                               position: menuPosition,
                               length: arrowLength,
                               color: self.menuColor)
-        containerView!.addSubview(arrowView!)
+        contentView!.addSubview(arrowView!)
+        initArrowConstraints()
 
-        // TODO: required?
-        sourceButton?.isUserInteractionEnabled = true
-        isUserInteractionEnabled = true
-
-        if source == .view {
-            sourceView?.superview?.addSubview(self)
-            sourceView?.superview?.sendSubviewToBack(self)
-            setNeedsLayout()
-        }
-        if source == .button {
-            sourceButton?.superview?.addSubview(self)
-            sourceButton?.superview?.sendSubviewToBack(self)
-            setNeedsLayout()
+        // Create menu view
+        menuView = UIView()
+        menuView!.layer.cornerRadius = cornerRadius;
+        menuView!.layer.masksToBounds = true;
+        menuView!.backgroundColor = menuColor
+        contentView!.addSubview(menuView!)
+        initMenuConstraints()
+    }
+    
+    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if object is TouchPopMenu && keyPath == "center" {
+            NSLog("position changed!")
+            
+            // Recalculate frame of positionView
+            
+            positionView!.frame = convert(self.bounds, to: overlayView)
+            arrowView!.position = menuPosition
+            
+            layoutArrowConstraints()
+            layoutMenuConstraints()
         }
     }
+    
+    // MARK: Constraints
+    
+    /*
+     Handle arrow constraints
+     */
+    var arrowLeftXConstraint : NSLayoutConstraint?
+    var arrowLeftYConstraint : NSLayoutConstraint?
+    var arrowUpXConstraint : NSLayoutConstraint?
+    var arrowUpYConstraint : NSLayoutConstraint?
+    var arrowRightXConstraint : NSLayoutConstraint?
+    var arrowRightYConstraint : NSLayoutConstraint?
+    var arrowDownXConstraint : NSLayoutConstraint?
+    var arrowDownYConstraint : NSLayoutConstraint?
+
+    private func initArrowConstraints()
+    {
+        arrowLeftXConstraint = (arrowView?.rightAnchor.constraint(equalTo: positionView!.leftAnchor, constant: 0))!
+        arrowLeftYConstraint = (arrowView?.centerYAnchor.constraint(equalTo: positionView!.centerYAnchor, constant: 0))!
+        arrowUpXConstraint = (arrowView?.centerXAnchor.constraint(equalTo: positionView!.centerXAnchor, constant: 0))!
+        arrowUpYConstraint = (arrowView?.bottomAnchor.constraint(equalTo: positionView!.topAnchor, constant: 0))!
+        arrowRightXConstraint = (arrowView?.leftAnchor.constraint(equalTo: positionView!.rightAnchor, constant: 0))!
+        arrowRightYConstraint = (arrowView?.centerYAnchor.constraint(equalTo: positionView!.centerYAnchor, constant: 0))!
+        arrowDownXConstraint = (arrowView?.centerXAnchor.constraint(equalTo: positionView!.centerXAnchor, constant: 0))!
+        arrowDownYConstraint = (arrowView?.topAnchor.constraint(equalTo: positionView!.bottomAnchor, constant: 0))!
+        
+        layoutArrowConstraints()
+    }
+    
+    private func layoutArrowConstraints()
+    {
+        arrowLeftXConstraint?.isActive = false
+        arrowLeftYConstraint?.isActive = false
+        arrowUpXConstraint?.isActive = false
+        arrowUpYConstraint?.isActive = false
+        arrowRightXConstraint?.isActive = false
+        arrowRightYConstraint?.isActive = false
+        arrowDownXConstraint?.isActive = false
+        arrowDownYConstraint?.isActive = false
+
+        if position == .left || position == .leftUp || position == .leftDown {
+            arrowLeftXConstraint?.isActive = true
+            arrowLeftYConstraint?.isActive = true
+        }
+        if position == .up || position == .upLeft || position == .upRight {
+            arrowUpXConstraint?.isActive = true
+            arrowUpYConstraint?.isActive = true
+        }
+        if position == .right || position == .rightUp || position == .rightDown {
+            arrowRightXConstraint?.isActive = true
+            arrowRightYConstraint?.isActive = true
+        }
+        if position == .down || position == .downLeft || position == .downRight {
+            arrowDownXConstraint?.isActive = true
+            arrowDownYConstraint?.isActive = true
+        }
+    }
+    
+    /*
+     Handle menu constraints
+     */
+    var menuHeightConstraint : NSLayoutConstraint?
+    var menuWidthConstraint : NSLayoutConstraint?
+    var menuLeftXConstraint : NSLayoutConstraint?
+    var menuLeftYConstraint : NSLayoutConstraint?
+    var menuUpXConstraint : NSLayoutConstraint?
+    var menuUpYConstraint : NSLayoutConstraint?
+    var menuRightXConstraint : NSLayoutConstraint?
+    var menuRightYConstraint : NSLayoutConstraint?
+    var menuDownXConstraint : NSLayoutConstraint?
+    var menuDownYConstraint : NSLayoutConstraint?
+    
+    private func initMenuConstraints()
+    {
+        menuView!.translatesAutoresizingMaskIntoConstraints = false
+
+        menuHeightConstraint = menuView!.heightAnchor.constraint(equalToConstant: 0)
+        menuHeightConstraint?.isActive = true
+        menuWidthConstraint = menuView!.widthAnchor.constraint(equalToConstant: 0)
+        menuWidthConstraint?.isActive = true
+        menuLeftXConstraint = menuView!.rightAnchor.constraint(equalTo: arrowView!.leftAnchor, constant: 0)
+        menuLeftYConstraint = menuView!.centerYAnchor.constraint(equalTo: arrowView!.centerYAnchor, constant: 0)
+        menuUpXConstraint = menuView!.centerXAnchor.constraint(equalTo: arrowView!.centerXAnchor, constant: 0)
+        menuUpYConstraint = menuView!.bottomAnchor.constraint(equalTo: arrowView!.topAnchor, constant: 0)
+        menuRightXConstraint = menuView!.leftAnchor.constraint(equalTo: arrowView!.rightAnchor, constant: 0)
+        menuRightYConstraint = menuView!.centerYAnchor.constraint(equalTo: arrowView!.centerYAnchor, constant: 0)
+        menuDownXConstraint = menuView!.centerXAnchor.constraint(equalTo: arrowView!.centerXAnchor, constant: 0)
+        menuDownYConstraint = menuView!.topAnchor.constraint(equalTo: arrowView!.bottomAnchor, constant: 0)
+        
+        layoutMenuConstraints()
+    }
+    
+    private func layoutMenuConstraints()
+    {
+        if position == .left || position == .leftUp || position == .leftDown {
+            menuLeftXConstraint?.isActive = true
+            menuLeftYConstraint?.isActive = true
+        } else {
+            menuLeftXConstraint?.isActive = false
+            menuLeftYConstraint?.isActive = false
+        }
+        if position == .up || position == .upLeft || position == .upRight {
+            menuUpXConstraint?.isActive = true
+            menuUpYConstraint?.isActive = true
+        } else {
+            menuUpXConstraint?.isActive = false
+            menuUpYConstraint?.isActive = false
+        }
+        if position == .right || position == .rightUp || position == .rightDown {
+            menuRightXConstraint?.isActive = true
+            menuRightYConstraint?.isActive = true
+        } else {
+            menuRightXConstraint?.isActive = false
+            menuRightYConstraint?.isActive = false
+        }
+        if position == .down || position == .downLeft || position == .downRight {
+            menuDownXConstraint?.isActive = true
+            menuDownYConstraint?.isActive = true
+        } else {
+            menuDownXConstraint?.isActive = false
+            menuDownYConstraint?.isActive = false
+        }
+        
+        // Optimize menu position
+        let origin = menuView?.frame.origin
+        let size = menuView?.frame.size
+        let screenSize = overlayView?.frame.size
+        var offset : CGPoint = CGPoint.zero
+
+        NSLog("menuPosition \(menuPosition)")
+        if menuPosition == .left {
+            if origin!.y < screenInset {
+                offset.y = screenInset - origin!.y
+            }
+            if origin!.y + size!.height > screenSize!.height - screenInset {
+                offset.y = screenSize!.height - size!.height - screenInset - origin!.y
+            }
+            menuLeftYConstraint?.constant = offset.y
+        }
+        else if menuPosition == .leftUp {
+            offset.y = -size!.height / 2 + arrowLength + cornerRadius
+            menuLeftYConstraint?.constant = offset.y
+        }
+        else if menuPosition == .leftDown {
+            offset.y = size!.height / 2 - arrowLength - cornerRadius
+            menuLeftYConstraint?.constant = offset.y
+        }
+            /*
+        else if menuPosition == .up {
+            var x = sourceCenter.x - (menuSize.width / 2)
+            let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - menuSize.height
+            if x < screenInset {
+                x = screenInset
+            }
+            if x + menuSize.width > screenSize.width - screenInset {
+                x = screenSize.width - menuSize.width - screenInset
+            }
+            return CGPoint(x: x, y: y)
+        }
+        else if menuPosition == .upLeft {
+            let x = sourceCenter.x - menuSize.width + arrowLength + cornerRadius
+            let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - menuSize.height
+            return CGPoint(x: x, y: y)
+        }
+        else if menuPosition == .upRight {
+            let x = sourceCenter.x - arrowLength - cornerRadius
+            let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - menuSize.height
+            return CGPoint(x: x, y: y)
+        }
+        */
+        else if menuPosition == .right {
+            if origin!.y < screenInset {
+                offset.y = screenInset - origin!.y
+            }
+            if origin!.y + size!.height > screenSize!.height - screenInset {
+                offset.y = screenSize!.height - size!.height - screenInset - origin!.y
+            }
+            menuRightYConstraint?.constant = offset.y
+        }
+        else if menuPosition == .rightUp {
+            offset.y = -size!.height / 2 + arrowLength + cornerRadius
+            menuRightYConstraint?.constant = offset.y
+        }
+        /*
+        else if menuPosition == .rightDown {
+            let x = sourceCenter.x + (sourceSize.width / 2) + arrowLength
+            let y = sourceCenter.y - arrowLength - cornerRadius
+            return CGPoint(x: x, y: y)
+        }
+        else if menuPosition == .down {
+            var x = sourceCenter.x - (menuSize.width / 2)
+            let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
+            if x < screenInset {
+                x = screenInset
+            }
+            if x + menuSize.width > screenSize.width - screenInset {
+                x = screenSize.width - menuSize.width - screenInset
+            }
+            return CGPoint(x: x, y: y)
+        }
+        else if menuPosition == .downLeft {
+            let x = sourceCenter.x - menuSize.width + arrowLength + cornerRadius
+            let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
+            return CGPoint(x: x, y: y)
+        }
+        else if menuPosition == .downRight {
+            let x = sourceCenter.x - arrowLength - cornerRadius
+            let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
+            return CGPoint(x: x, y: y)
+        }
+        */
+    }
+
+    // MARK: Menu actions
     
     /*
      Show menu
      */
     public func show()
     {
-        if source == .view {
-            sourceView?.superview?.bringSubviewToFront(self)
-        }
-        if source == .button {
-            sourceButton?.superview?.bringSubviewToFront(self)
-        }
-
+        setNeedsUpdateConstraints()
+        sourceWindow!.bringSubviewToFront(overlayView!)
+        
         if menuPosition == .left || menuPosition == .leftUp || menuPosition == .leftDown
         {
-            containerView!.layer.opacity = 0
-            containerView!.frame.origin.x = animationOffset
-            layer.opacity = 0
-            isHidden = false
+            shadowView!.layer.opacity = 0
+            shadowView!.frame.origin.x = animationOffset
+            overlayView!.layer.opacity = 0
+            overlayView!.isHidden = false
         }
         else if menuPosition == .up || menuPosition == .upLeft || menuPosition == .upRight
         {
-            containerView!.layer.opacity = 0
-            containerView!.frame.origin.y = animationOffset
-            layer.opacity = 0
-            isHidden = false
+            shadowView!.layer.opacity = 0
+            shadowView!.frame.origin.y = animationOffset
+            overlayView!.layer.opacity = 0
+            overlayView!.isHidden = false
         }
         else if menuPosition == .right || menuPosition == .rightUp || menuPosition == .rightDown
         {
-            containerView!.layer.opacity = 0
-            containerView!.frame.origin.x = -animationOffset
-            layer.opacity = 0
-            isHidden = false
+            shadowView!.layer.opacity = 0
+            shadowView!.frame.origin.x = -animationOffset
+            overlayView!.layer.opacity = 0
+            overlayView!.isHidden = false
         }
         else if menuPosition == .down || menuPosition == .downLeft || menuPosition == .downRight
         {
-            containerView!.layer.opacity = 0
-            containerView!.frame.origin.y = -animationOffset
-            layer.opacity = 0
-            isHidden = false
+            shadowView!.layer.opacity = 0
+            shadowView!.frame.origin.y = -animationOffset
+            overlayView!.layer.opacity = 0
+            overlayView!.isHidden = false
         }
         
         UIView.animate(withDuration: self.animationDuration, delay: 0, options: [.curveEaseIn], animations: {
-            self.containerView!.frame.origin.x = 0
-            self.containerView!.frame.origin.y = 0
-            self.containerView!.layer.opacity = 1
-            self.layer.opacity = 1
+            self.shadowView!.frame.origin.x = 0
+            self.shadowView!.frame.origin.y = 0
+            self.shadowView!.layer.opacity = 1
+            self.overlayView!.layer.opacity = 1
         })
 
         isOpen = true
@@ -297,64 +612,40 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
      */
     public func hide()
     {
-        containerView!.layer.opacity = 1
-        layer.opacity = 1
+        shadowView!.layer.opacity = 1
+        overlayView!.layer.opacity = 1
 
         UIView.animate(withDuration: self.animationDuration, delay: 0, options: [.curveEaseIn], animations: {
             if self.menuPosition == .left || self.menuPosition == .leftUp || self.menuPosition == .leftDown
             {
-                self.containerView!.layer.opacity = 0
-                self.containerView!.frame.origin.x = self.animationOffset
-                self.layer.opacity = 0
+                self.shadowView!.layer.opacity = 0
+                self.shadowView!.frame.origin.x = self.animationOffset
+                self.overlayView!.layer.opacity = 0
             }
             else if self.menuPosition == .up || self.menuPosition == .upLeft || self.menuPosition == .upRight
             {
-                self.containerView!.layer.opacity = 0
-                self.containerView!.frame.origin.y = self.animationOffset
-                self.layer.opacity = 0
+                self.shadowView!.layer.opacity = 0
+                self.shadowView!.frame.origin.y = self.animationOffset
+                self.overlayView!.layer.opacity = 0
             }
             else if self.menuPosition == .right || self.menuPosition == .rightUp || self.menuPosition == .rightDown
             {
-                self.containerView!.layer.opacity = 0
-                self.containerView!.frame.origin.x = -self.animationOffset
-                self.layer.opacity = 0
+                self.shadowView!.layer.opacity = 0
+                self.shadowView!.frame.origin.x = -self.animationOffset
+                self.overlayView!.layer.opacity = 0
             }
             else if self.menuPosition == .down || self.menuPosition == .downLeft || self.menuPosition == .downRight
             {
-                self.containerView!.layer.opacity = 0
-                self.containerView!.frame.origin.y = -self.animationOffset
-                self.layer.opacity = 0
+                self.shadowView!.layer.opacity = 0
+                self.shadowView!.frame.origin.y = -self.animationOffset
+                self.overlayView!.layer.opacity = 0
             }
         }, completion: { (finished: Bool) in
-            self.isHidden = true
-            
-            if self.source == .view {
-                self.sourceView?.superview?.sendSubviewToBack(self)
-            }
-            if self.source == .button {
-                self.sourceButton?.superview?.sendSubviewToBack(self)
-            }
+            self.overlayView!.isHidden = true
+            self.sourceWindow!.sendSubviewToBack(self.overlayView!)
         })
 
         isOpen = false
-    }
-    
-    /*
-     Frame of the source view
-     */
-    private var sourceFrame : CGRect {
-        get {
-            if source == .view {
-                return sourceView!.frame
-            }
-            if source == .button {
-                return sourceButton!.frame
-            }
-            if source == .barButtonItem {
-                return (sourceBarButtonItem!.value(forKey: "view") as? UIView)!.frame
-            }
-            return CGRect.zero
-        }
     }
     
     /*
@@ -362,36 +653,8 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
      */
     private var sourceCenter: CGPoint {
         get {
-            let source = sourceFrame
-            return CGPoint(x: source.origin.x + source.size.width / 2,
-                           y: source.origin.y + source.size.height / 2)
-        }
-    }
-
-    /*
-     Origin of arrow view
-     */
-    private var arrowOrigin : CGPoint {
-        get {
-            let sourceSize = sourceFrame.size
-            
-            if menuPosition == .left || menuPosition == .leftUp || menuPosition == .leftDown {
-                return CGPoint(x: sourceCenter.x - (sourceSize.width / 2) - arrowLength,
-                               y: sourceCenter.y - arrowLength)
-            }
-            if menuPosition == .up || menuPosition == .upLeft || menuPosition == .upRight {
-                return CGPoint(x: sourceCenter.x - arrowLength,
-                               y: sourceCenter.y - (sourceSize.height / 2) - arrowLength)
-            }
-            if menuPosition == .right || menuPosition == .rightUp || menuPosition == .rightDown {
-                return CGPoint(x: sourceCenter.x + (sourceSize.width / 2),
-                               y: sourceCenter.y - arrowLength)
-            }
-            if menuPosition == .down || menuPosition == .downLeft || menuPosition == .downRight {
-                return CGPoint(x: sourceCenter.x - arrowLength,
-                               y: sourceCenter.y + (sourceSize.height / 2))
-            }
-            return CGPoint.zero
+            return CGPoint(x: frame.origin.x + frame.size.width / 2,
+                           y: frame.origin.y + frame.size.height / 2)
         }
     }
 
@@ -425,108 +688,12 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
     }
     
     /*
-     Origin of content view
-     */
-    private var contentOrigin : CGPoint {
-        get {
-            let screenSize = UIScreen.main.bounds
-            let sourceSize = sourceFrame.size
-
-            if menuPosition == .left {
-                let x = sourceCenter.x - (sourceSize.width / 2) - arrowLength - contentSize.width
-                var y = sourceCenter.y - (contentSize.height / 2)
-                if y < screenInset {
-                    y = screenInset
-                }
-                if y + contentSize.height > screenSize.height - screenInset {
-                    y = screenSize.height - contentSize.height - screenInset
-                }
-                return CGPoint(x: x, y: y)
-            }
-            else if menuPosition == .leftUp {
-                let x = sourceCenter.x - (sourceSize.width / 2) - arrowLength - contentSize.width
-                let y = sourceCenter.y - contentSize.height + arrowLength + cornerRadius
-                return CGPoint(x: x, y: y)
-            }
-            else if menuPosition == .leftDown {
-                let x = sourceCenter.x - (sourceSize.width / 2) - arrowLength - contentSize.width
-                let y = sourceCenter.y - arrowLength - cornerRadius
-                return CGPoint(x: x, y: y)
-            }
-            else if menuPosition == .up {
-                var x = sourceCenter.x - (contentSize.width / 2)
-                let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - contentSize.height
-                if x < screenInset {
-                    x = screenInset
-                }
-                if x + contentSize.width > screenSize.width - screenInset {
-                    x = screenSize.width - contentSize.width - screenInset
-                }
-                return CGPoint(x: x, y: y)
-            }
-            else if menuPosition == .upLeft {
-                let x = sourceCenter.x - contentSize.width + arrowLength + cornerRadius
-                let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - contentSize.height
-                return CGPoint(x: x, y: y)
-            }
-            else if menuPosition == .upRight {
-                let x = sourceCenter.x - arrowLength - cornerRadius
-                let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - contentSize.height
-                return CGPoint(x: x, y: y)
-            }
-            else if menuPosition == .right {
-                let x = sourceCenter.x + (sourceSize.width / 2) + arrowLength
-                var y = sourceCenter.y - (contentSize.height / 2)
-                if y < screenInset {
-                    y = screenInset
-                }
-                if y + contentSize.height > screenSize.height - screenInset {
-                    y = screenSize.height - contentSize.height - screenInset
-                }
-                return CGPoint(x: x, y: y)
-            }
-            else if menuPosition == .rightUp {
-                let x = sourceCenter.x + (sourceSize.width / 2) + arrowLength
-                let y = sourceCenter.y - contentSize.height + arrowLength + cornerRadius
-                return CGPoint(x: x, y: y)
-            }
-            else if menuPosition == .rightDown {
-                let x = sourceCenter.x + (sourceSize.width / 2) + arrowLength
-                let y = sourceCenter.y - arrowLength - cornerRadius
-                return CGPoint(x: x, y: y)
-            }
-            else if menuPosition == .down {
-                var x = sourceCenter.x - (contentSize.width / 2)
-                let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
-                if x < screenInset {
-                    x = screenInset
-                }
-                if x + contentSize.width > screenSize.width - screenInset {
-                    x = screenSize.width - contentSize.width - screenInset
-                }
-                return CGPoint(x: x, y: y)
-            }
-            else if menuPosition == .downLeft {
-                let x = sourceCenter.x - contentSize.width + arrowLength + cornerRadius
-                let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
-                return CGPoint(x: x, y: y)
-            }
-            else if menuPosition == .downRight {
-                let x = sourceCenter.x - arrowLength - cornerRadius
-                let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
-                return CGPoint(x: x, y: y)
-            }
-            return CGPoint.zero
-        }
-    }
-    
-    /*
      Add an action to the menu
      */
     public func addAction(action: TouchPopMenuAction)
     {
-        self.actions.append(action)
-        self.initActions()
+        actions.append(action)
+        initActions()
     }
     
     /*
@@ -550,17 +717,17 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
     private func initActions()
     {
         // Remove all subviews
-        contentView!.subviews.forEach({ $0.removeFromSuperview() })
-        contentSize = CGSize.zero
+        menuView!.subviews.forEach({ $0.removeFromSuperview() })
+        menuSize = CGSize.zero
 
         // Create views for each action
         for (index, action) in actions.enumerated()
         {
             let size: CGSize = action.title.size(withAttributes: [
-                NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14.0)
+                NSAttributedString.Key.font: labelFont
             ])
             let actionView = UIView(frame: CGRect(x: 0,
-                                                  y: contentSize.height,
+                                                  y: menuSize.height,
                                                   width: size.width + labelInset * 2,
                                                   height: labelHeight))
 
@@ -571,7 +738,8 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
                                               y: 0,
                                               width: size.width,
                                               height: labelHeight))
-            label.font = UIFont.systemFont(ofSize: 14.0)
+            label.tag = 1
+            label.font = labelFont
             label.text = action.title
             label.textColor = textColor
             actionView.addSubview(label)
@@ -579,167 +747,171 @@ public class TouchPopMenu : UIView, TouchHandlerDelegate
             // Add border (= top border of label)
             if index > 0 {
                 let borderLayer = CALayer()
-                borderLayer.frame = CGRect(x: 0, y: contentSize.height, width: label.frame.width, height: 1)
+                borderLayer.frame = CGRect(x: 0, y: menuSize.height, width: label.frame.width, height: 1)
                 borderLayer.backgroundColor = dividerColor.cgColor
-                contentView!.layer.addSublayer(borderLayer)
+                menuView!.layer.addSublayer(borderLayer)
             }
 
-            contentView!.addSubview(actionView)
-            contentSize.height += labelHeight
-            if size.width + (labelInset * 2) > contentSize.width {
-                contentSize.width = size.width + (labelInset * 2)
+            menuView!.addSubview(actionView)
+            menuSize.height += labelHeight
+            if size.width + (labelInset * 2) > menuSize.width {
+                menuSize.width = size.width + (labelInset * 2)
             }
         }
+        menuWidthConstraint?.constant = menuSize.width
+        menuHeightConstraint?.constant = menuSize.height
+        
         setNeedsDisplay()
     }
 
     override public func layoutSubviews()
     {
         super.layoutSubviews()
-
-        // Update frames
-        frame = UIScreen.main.bounds
-        touchView.frame = sourceFrame
-        containerView!.frame = UIScreen.main.bounds
-        contentView!.frame = CGRect(x: contentOrigin.x,
-                                    y: contentOrigin.y,
-                                    width: contentSize.width,
-                                    height: contentSize.height)
         
-        for divider in contentView!.layer.sublayers! {
-            divider.frame.size.width = contentSize.width
+        for divider in menuView!.layer.sublayers! {
+            divider.frame.size.width = menuSize.width
         }
-        for subviews in contentView!.subviews {
-            subviews.frame.size.width = contentSize.width
+        for subviews in menuView!.subviews {
+            subviews.frame.size.width = menuSize.width
         }
 
-        arrowView!.origin = arrowOrigin
-        arrowView!.position = menuPosition
         arrowView!.setNeedsLayout()
         arrowView!.setNeedsDisplay()
     }
     
-    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            touchBegan(touch)
-        }
-    }
+    // MARK: Apply theme changes
     
-    override public func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            touchMoved(touch)
-        }
-    }
-    
-    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            touchEnded(touch)
-        }
-    }
-
-    public func menuTouchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            touchBegan(touch)
-        }
-    }
-    
-    public func menuTouchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            touchMoved(touch)
-        }
-    }
-    
-    public func menuTouchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            touchEnded(touch)
-        }
-    }
-    
-    private var movedOutOfSourceButton = false
-    
-    private func touchBegan(_ touch: UITouch)
+    /*
+     Apply all changes for parameters that are related to the design (theme) of the menu
+     */
+    private func applyTheme()
     {
-        let point = touch.location(in: self)
-        if touchView.frame.contains(point) {
-            if !isOpen {
-                show()
-            }
-            else {
-                hide()
+        for divider in menuView!.layer.sublayers! {
+            divider.backgroundColor = dividerColor.cgColor
+        }
+        for actionViews in menuView!.subviews {
+            for subview in actionViews.subviews {
+                if let label = subview as? UILabel {
+                    if label.tag == 1 {
+                        label.textColor = textColor
+                        label.font = labelFont
+                    }
+                }
             }
         }
         
-        movedOutOfSourceButton = false
+        overlayView?.backgroundColor = overlayColor
+
+        arrowView?.color = menuColor
+        arrowView!.setNeedsDisplay()
+        
+        menuView!.backgroundColor = menuColor
     }
+
+    // MARK: Touch handler
     
+    /*
+     Did we moved out of the touch area?
+     */
+    private var movedOutOfSourceButton = false
+    
+    /*
+     Selected action
+     */
     private var selectedAction : Int? = nil
     
-    private func touchMoved(_ touch: UITouch)
-    {
-        let point = touch.location(in: self)
-        if (sourceFrame.contains(point)) {
-            movedOutOfSourceButton = true
-        }
-        // Check if action is selected
-        if isOpen {
-            var selectedNow : Int? = nil
-            for subview in contentView!.subviews {
-                let subviewInSelf = subview.convert(subview.bounds, to: self)
-                if subviewInSelf.contains(point)
-                {
-                    subview.backgroundColor = selectedColor
-                    selectedNow = subview.tag
+    /*
+     touchesBegan()
+     */
+    public func menuTouchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            let point = touch.location(in: self)
+            if bounds.contains(point) {
+                if !isOpen {
+                    show()
                 }
                 else {
-                    subview.backgroundColor = .clear
+                    hide()
                 }
             }
             
-            if selectedNow != selectedAction {
-                // Haptic feedback
-                if #available(iOS 10.0, *) {
-                    if selectedNow != nil {
-                        let generator = UISelectionFeedbackGenerator()
-                        generator.selectionChanged()
+            movedOutOfSourceButton = false
+        }
+    }
+    
+    /*
+     touchesMoved()
+     */
+    public func menuTouchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            let point = touch.location(in: self)
+            if !bounds.contains(point) {
+                movedOutOfSourceButton = true
+            }
+            // Check if action is selected
+            if isOpen {
+                var selectedNow : Int? = nil
+                for subview in menuView!.subviews {
+                    let subviewInSelf = subview.convert(subview.bounds, to: self)
+                    if subviewInSelf.contains(point)
+                    {
+                        subview.backgroundColor = selectedColor
+                        selectedNow = subview.tag
+                    }
+                    else {
+                        subview.backgroundColor = .clear
                     }
                 }
-                selectedAction = selectedNow
+
+                if selectedNow != selectedAction {
+                    // Haptic feedback
+                    if #available(iOS 10.0, *) {
+                        if selectedNow != nil {
+                            let generator = UISelectionFeedbackGenerator()
+                            generator.selectionChanged()
+                        }
+                    }
+                    selectedAction = selectedNow
+                }
             }
         }
     }
     
-    private func touchEnded(_ touch: UITouch)
-    {
-        let point = touch.location(in: self)
-        
-        let contentFrame = contentView?.frame
-        let arrowFrame = arrowView?.frame
-        let touchFrame = touchView.frame
-        
-        // Hide when on "source" view
-        if touchFrame.contains(point) {
-            if isOpen && movedOutOfSourceButton {
-                hide()
-            }
-        }
-        // Hide when moved outside of menu
-        if !arrowFrame!.contains(point) && !contentFrame!.contains(point) && !touchFrame.contains(point) {
-            if isOpen {
-                hide()
-            }
-        }
-        // Check if action is selected
-        if isOpen {
-            for subview in contentView!.subviews {
-                let subviewInSelf = subview.convert(subview.bounds, to: self)
-                if subviewInSelf.contains(point) {
-                    if actions.indices.contains(subview.tag) {
-                        let action = actions[subview.tag]
-                        action.selected(self)
-                    }
-                    subview.backgroundColor = .clear
+    /*
+     touchesEnded()
+     */
+    public func menuTouchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            let point = touch.location(in: self)
+            
+            let menuFrame = menuView?.frame
+            let arrowFrame = arrowView?.frame
+            
+            // Hide when on "source" view
+            if bounds.contains(point) {
+                if isOpen && movedOutOfSourceButton {
                     hide()
-                    break
+                }
+            }
+            // Hide when moved outside of menu
+            if !arrowFrame!.contains(point) && !menuFrame!.contains(point) && !bounds.contains(point) {
+                if isOpen {
+                    hide()
+                }
+            }
+            // Check if action is selected
+            if isOpen {
+                for subview in menuView!.subviews {
+                    let subviewInSelf = subview.convert(subview.bounds, to: self)
+                    if subviewInSelf.contains(point) {
+                        if actions.indices.contains(subview.tag) {
+                            let action = actions[subview.tag]
+                            action.selected(self)
+                        }
+                        subview.backgroundColor = .clear
+                        hide()
+                        break
+                    }
                 }
             }
         }

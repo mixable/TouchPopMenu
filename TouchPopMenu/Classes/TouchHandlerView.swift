@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol TouchHandlerDelegate
+public protocol TouchHandlerDelegate: class
 {
     func menuTouchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
     func menuTouchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)
@@ -17,7 +17,7 @@ public protocol TouchHandlerDelegate
 
 public class TouchHandlerView : UIView
 {
-    public var touchDelegate: TouchHandlerDelegate?
+    public weak var touchDelegate: TouchHandlerDelegate?
 
     override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
     {

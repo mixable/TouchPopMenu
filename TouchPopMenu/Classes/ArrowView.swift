@@ -10,27 +10,31 @@ import UIKit
 
 class ArrowView : UIView
 {
-    var origin: CGPoint = CGPoint.zero
+    var pointTo: UIView?
     var position: TouchPopMenu.Position = .left
     var length: CGFloat = 15.0
-    var color: UIColor = .lightGray
+    public var color: UIColor = .lightGray
+    
+    private var widthConstraint : NSLayoutConstraint?
+    private var heightConstraint : NSLayoutConstraint?
 
-    init(origin: CGPoint,
+    init(pointTo: UIView,
          position: TouchPopMenu.Position,
          length: CGFloat = 15.0,
          color: UIColor = .lightGray)
     {
-        self.origin = origin
+        self.pointTo = pointTo
         self.position = position
         self.length = length
         self.color = color
 
-        super.init(frame: CGRect.zero) // The correct frame is calculated later
-        
-        frame = CGRect(x: origin.x,
-                       y: origin.y,
-                       width: arrowSize.width,
-                       height: arrowSize.height)
+        super.init(frame: CGRect.zero)
+
+        translatesAutoresizingMaskIntoConstraints = false
+        widthConstraint = widthAnchor.constraint(equalToConstant: size.width)
+        widthConstraint!.isActive = true
+        heightConstraint = heightAnchor.constraint(equalToConstant: size.height)
+        heightConstraint!.isActive = true
 
         backgroundColor = .clear
     }
@@ -39,7 +43,7 @@ class ArrowView : UIView
         super.init(coder: aDecoder)
     }
 
-    var arrowSize : CGSize {
+    public var size : CGSize {
         get {
             if position == .left || position == .leftUp || position == .leftDown
                 || position == .right || position == .rightUp || position == .rightDown {
@@ -56,12 +60,9 @@ class ArrowView : UIView
     override func layoutSubviews()
     {
         super.layoutSubviews()
-
-        // Update frame
-        frame = CGRect(x: origin.x,
-                       y: origin.y,
-                       width: arrowSize.width,
-                       height: arrowSize.height)
+        
+        widthConstraint!.constant = size.width
+        heightConstraint!.constant = size.height
     }
     
     override func draw(_ rect: CGRect)
@@ -73,22 +74,22 @@ class ArrowView : UIView
     
         if (position == .left || position == .leftUp || position == .leftDown) {
             context.move(to: CGPoint(x: rect.minX, y: rect.minY))
-            context.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY / 2))
+            context.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
             context.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
         }
         if (position == .up || position == .upLeft || position == .upRight) {
             context.move(to: CGPoint(x: rect.minX, y: rect.minY))
-            context.addLine(to: CGPoint(x: rect.maxX / 2, y: rect.maxY))
+            context.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
             context.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
         }
         if (position == .right || position == .rightUp || position == .rightDown) {
             context.move(to: CGPoint(x: rect.maxX, y: rect.minY))
-            context.addLine(to: CGPoint(x: rect.minX, y: rect.maxY / 2))
+            context.addLine(to: CGPoint(x: rect.minX, y: rect.midY))
             context.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         }
         if (position == .down || position == .downLeft || position == .downRight) {
             context.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-            context.addLine(to: CGPoint(x: rect.maxX / 2, y: rect.minY))
+            context.addLine(to: CGPoint(x: rect.midX, y: rect.minY))
             context.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         }
     

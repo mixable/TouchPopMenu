@@ -21,32 +21,32 @@ class ViewController: UIViewController
     {
         super.loadView()
         
-        let menu1 = TouchPopMenu(pointTo: buttonTopLeft)
+        let menu1 = TouchPopMenu(pointTo: buttonTopLeft, inController: self)
         menu1.position = .auto
         menu1.addAction(action: TouchPopMenuAction(title: "Copy", selected: { menu in print("Hello Copy") }))
         menu1.addAction(action: TouchPopMenuAction(title: "Paste", selected: { menu in print("Hello Paste") }))
         menu1.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: { menu in print("Hello Undo") }))
 
-        let menu2 = TouchPopMenu(pointTo: buttonTopRight)
+        let menu2 = TouchPopMenu(pointTo: buttonTopRight, inController: self)
         menu2.position = .auto
         menu2.addAction(action: TouchPopMenuAction(title: "Copy", selected: { menu in print("Hello Copy") }))
         menu2.addAction(action: TouchPopMenuAction(title: "Paste", selected: { menu in print("Hello Paste") }))
         menu2.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: { menu in print("Hello Undo") }))
 
-        let menu3 = TouchPopMenu(pointTo: buttonBottomLeft)
+        let menu3 = TouchPopMenu(pointTo: buttonBottomLeft, inController: self)
         menu3.position = .auto
         menu3.addAction(action: TouchPopMenuAction(title: "Copy", selected: { menu in print("Hello Copy") }))
         menu3.addAction(action: TouchPopMenuAction(title: "Paste", selected: { menu in print("Hello Paste") }))
         menu3.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: { menu in print("Hello Undo") }))
 
-        let menu4 = TouchPopMenu(pointTo: buttonBottomRight)
+        let menu4 = TouchPopMenu(pointTo: buttonBottomRight, inController: self)
         menu4.position = .auto
         menu4.addAction(action: TouchPopMenuAction(title: "Copy", selected: { menu in print("Hello Copy") }))
         menu4.addAction(action: TouchPopMenuAction(title: "Paste", selected: { menu in print("Hello Paste") }))
         menu4.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: { menu in print("Hello Undo") }))
 
-        let menu = TouchPopMenu(pointTo: buttonCenter!)
-        menu.position = .auto
+        let menu = TouchPopMenu(pointTo: buttonCenter, inController: self)
+        menu.position = .leftUp
         menu.addAction(action: TouchPopMenuAction(title: "Copy", selected: { menu in print("Hello Copy") }))
         menu.addAction(action: TouchPopMenuAction(title: "Paste", selected: { menu in print("Hello Paste") }))
         menu.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: { menu in print("Hello Undo") }))

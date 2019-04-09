@@ -11,7 +11,6 @@
 		C79AF00322552186008FE178 /* TouchHandlerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C79AF00222552186008FE178 /* TouchHandlerView.swift */; };
 		C79AF00622555615008FE178 /* TouchPopMenu.podspec in Resources */ = {isa = PBXBuildFile; fileRef = C79AF00522555614008FE178 /* TouchPopMenu.podspec */; };
 		C7FE81A42254B09F00F6B9C4 /* ArrowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7FE81A02254B09F00F6B9C4 /* ArrowView.swift */; };
-		C7FE81A52254B09F00F6B9C4 /* TouchGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7FE81A12254B09F00F6B9C4 /* TouchGestureRecognizer.swift */; };
 		C7FE81A62254B09F00F6B9C4 /* TouchPopMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7FE81A22254B09F00F6B9C4 /* TouchPopMenu.swift */; };
 		C7FE81A72254B09F00F6B9C4 /* TouchPopMenuAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7FE81A32254B09F00F6B9C4 /* TouchPopMenuAction.swift */; };
 		C7FE81BE2254B0F300F6B9C4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7FE81BD2254B0F300F6B9C4 /* AppDelegate.swift */; };
@@ -40,7 +39,6 @@
 		C79AF00222552186008FE178 /* TouchHandlerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchHandlerView.swift; sourceTree = "<group>"; };
 		C79AF00522555614008FE178 /* TouchPopMenu.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TouchPopMenu.podspec; sourceTree = "<group>"; };
 		C7FE81A02254B09F00F6B9C4 /* ArrowView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrowView.swift; sourceTree = "<group>"; };
-		C7FE81A12254B09F00F6B9C4 /* TouchGestureRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchGestureRecognizer.swift; sourceTree = "<group>"; };
 		C7FE81A22254B09F00F6B9C4 /* TouchPopMenu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchPopMenu.swift; sourceTree = "<group>"; };
 		C7FE81A32254B09F00F6B9C4 /* TouchPopMenuAction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchPopMenuAction.swift; sourceTree = "<group>"; };
 		C7FE81BB2254B0F300F6B9C4 /* TouchPopMenuDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TouchPopMenuDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -117,7 +115,6 @@
 			isa = PBXGroup;
 			children = (
 				C7FE81A02254B09F00F6B9C4 /* ArrowView.swift */,
-				C7FE81A12254B09F00F6B9C4 /* TouchGestureRecognizer.swift */,
 				C7FE81A22254B09F00F6B9C4 /* TouchPopMenu.swift */,
 				C7FE81A32254B09F00F6B9C4 /* TouchPopMenuAction.swift */,
 				C79AF00222552186008FE178 /* TouchHandlerView.swift */,
@@ -299,7 +296,6 @@
 				C7FE81A72254B09F00F6B9C4 /* TouchPopMenuAction.swift in Sources */,
 				C7FE81A42254B09F00F6B9C4 /* ArrowView.swift in Sources */,
 				C79AF00322552186008FE178 /* TouchHandlerView.swift in Sources */,
-				C7FE81A52254B09F00F6B9C4 /* TouchGestureRecognizer.swift in Sources */,
 				C7FE81A62254B09F00F6B9C4 /* TouchPopMenu.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
