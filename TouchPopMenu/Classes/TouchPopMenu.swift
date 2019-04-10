@@ -43,7 +43,11 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
     /*
      Position relative to source view
      */
-    public var position : Position = .auto
+    public var position : Position = .auto {
+        didSet {
+            applyPosition()
+        }
+    }
 
     /*
      Corner radius of menu view
@@ -328,16 +332,19 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
     
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if object is TouchPopMenu && keyPath == "center" {
-            NSLog("position changed!")
-            
             // Recalculate frame of positionView
-            
-            positionView!.frame = convert(self.bounds, to: overlayView)
-            arrowView!.position = menuPosition
-            
-            layoutArrowConstraints()
-            layoutMenuConstraints()
+            applyPosition()
         }
+    }
+    
+    private func applyPosition()
+    {
+        positionView!.frame = convert(self.bounds, to: overlayView)
+        arrowView!.position = menuPosition
+        
+        layoutArrowConstraints()
+        layoutMenuConstraints()
+        setNeedsLayout()
     }
     
     // MARK: Constraints
@@ -433,48 +440,55 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
     
     private func layoutMenuConstraints()
     {
+        menuLeftXConstraint?.isActive = false
+        menuLeftYConstraint?.isActive = false
+        menuUpXConstraint?.isActive = false
+        menuUpYConstraint?.isActive = false
+        menuRightXConstraint?.isActive = false
+        menuRightYConstraint?.isActive = false
+        menuDownXConstraint?.isActive = false
+        menuDownYConstraint?.isActive = false
+
         if position == .left || position == .leftUp || position == .leftDown {
             menuLeftXConstraint?.isActive = true
             menuLeftYConstraint?.isActive = true
-        } else {
-            menuLeftXConstraint?.isActive = false
-            menuLeftYConstraint?.isActive = false
         }
         if position == .up || position == .upLeft || position == .upRight {
             menuUpXConstraint?.isActive = true
             menuUpYConstraint?.isActive = true
-        } else {
-            menuUpXConstraint?.isActive = false
-            menuUpYConstraint?.isActive = false
         }
         if position == .right || position == .rightUp || position == .rightDown {
             menuRightXConstraint?.isActive = true
             menuRightYConstraint?.isActive = true
-        } else {
-            menuRightXConstraint?.isActive = false
-            menuRightYConstraint?.isActive = false
         }
         if position == .down || position == .downLeft || position == .downRight {
             menuDownXConstraint?.isActive = true
             menuDownYConstraint?.isActive = true
-        } else {
-            menuDownXConstraint?.isActive = false
-            menuDownYConstraint?.isActive = false
         }
         
         // Optimize menu position
-        let origin = menuView?.frame.origin
-        let size = menuView?.frame.size
-        let screenSize = overlayView?.frame.size
-        var offset : CGPoint = CGPoint.zero
+        let size = menuView?.bounds.size
+        let screenSize = overlayView?.bounds.size
+        var offset : CGPoint = CGPoint(x: 0, y: 0)
 
         NSLog("menuPosition \(menuPosition)")
         if menuPosition == .left {
-            if origin!.y < screenInset {
-                offset.y = screenInset - origin!.y
-            }
-            if origin!.y + size!.height > screenSize!.height - screenInset {
-                offset.y = screenSize!.height - size!.height - screenInset - origin!.y
+            if #available(iOS 11.0, *) {
+                // Handle safeAreaInsets
+                if sourceCenter.y - size!.height / 2 < screenInset + (overlayView?.safeAreaInsets.top)! {
+                    offset.y = screenInset + (overlayView?.safeAreaInsets.top)! + size!.height / 2 - sourceCenter.y
+                }
+                if sourceCenter.y + size!.height / 2 > screenSize!.height - screenInset - (overlayView?.safeAreaInsets.bottom)! {
+                    offset.y = screenSize!.height - screenInset - (overlayView?.safeAreaInsets.bottom)! - size!.height / 2 - sourceCenter.y
+                }
+            } else {
+                // Fallback on earlier versions
+                if sourceCenter.y - size!.height / 2 < screenInset {
+                    offset.y = screenInset + size!.height / 2 - sourceCenter.y
+                }
+                if sourceCenter.y + size!.height / 2 > screenSize!.height - screenInset {
+                    offset.y = screenSize!.height - screenInset - size!.height / 2 - sourceCenter.y
+                }
             }
             menuLeftYConstraint?.constant = offset.y
         }
@@ -486,35 +500,51 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
             offset.y = size!.height / 2 - arrowLength - cornerRadius
             menuLeftYConstraint?.constant = offset.y
         }
-            /*
         else if menuPosition == .up {
-            var x = sourceCenter.x - (menuSize.width / 2)
-            let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - menuSize.height
-            if x < screenInset {
-                x = screenInset
+            if #available(iOS 11.0, *) {
+                // Handle safeAreaInsets
+                if sourceCenter.x - size!.width / 2 < screenInset + (overlayView?.safeAreaInsets.left)! {
+                    offset.x = screenInset + (overlayView?.safeAreaInsets.left)! + size!.width / 2 - sourceCenter.x
+                }
+                if sourceCenter.x + size!.width / 2 > screenSize!.width - screenInset - (overlayView?.safeAreaInsets.right)! {
+                    offset.x = screenSize!.width - screenInset - (overlayView?.safeAreaInsets.right)! - size!.width / 2 - sourceCenter.x
+                }
+            } else {
+                // Fallback on earlier versions
+                if sourceCenter.x - size!.width / 2 < screenInset {
+                    offset.x = screenInset + size!.width / 2 - sourceCenter.x
+                }
+                if sourceCenter.x + size!.width / 2 > screenSize!.width - screenInset {
+                    offset.x = screenSize!.width - screenInset - size!.width / 2 - sourceCenter.x
+                }
             }
-            if x + menuSize.width > screenSize.width - screenInset {
-                x = screenSize.width - menuSize.width - screenInset
-            }
-            return CGPoint(x: x, y: y)
+            menuUpXConstraint?.constant = offset.x
         }
         else if menuPosition == .upLeft {
-            let x = sourceCenter.x - menuSize.width + arrowLength + cornerRadius
-            let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - menuSize.height
-            return CGPoint(x: x, y: y)
+            offset.x = -size!.width / 2 + arrowLength + cornerRadius
+            menuUpXConstraint?.constant = offset.x
         }
         else if menuPosition == .upRight {
-            let x = sourceCenter.x - arrowLength - cornerRadius
-            let y = sourceCenter.y - (sourceSize.height / 2) - arrowLength - menuSize.height
-            return CGPoint(x: x, y: y)
+            offset.x = size!.width / 2 - arrowLength - cornerRadius
+            menuUpXConstraint?.constant = offset.x
         }
-        */
         else if menuPosition == .right {
-            if origin!.y < screenInset {
-                offset.y = screenInset - origin!.y
-            }
-            if origin!.y + size!.height > screenSize!.height - screenInset {
-                offset.y = screenSize!.height - size!.height - screenInset - origin!.y
+            if #available(iOS 11.0, *) {
+                // Handle safeAreaInsets
+                if sourceCenter.y - size!.height / 2 < screenInset + (overlayView?.safeAreaInsets.top)! {
+                    offset.y = screenInset + (overlayView?.safeAreaInsets.top)! + size!.height / 2 - sourceCenter.y
+                }
+                if sourceCenter.y + size!.height / 2 > screenSize!.height - screenInset - (overlayView?.safeAreaInsets.bottom)! {
+                    offset.y = screenSize!.height - screenInset - (overlayView?.safeAreaInsets.bottom)! - size!.height / 2 - sourceCenter.y
+                }
+            } else {
+                // Fallback on earlier versions
+                if sourceCenter.y - size!.height / 2 < screenInset {
+                    offset.y = screenInset + size!.height / 2 - sourceCenter.y
+                }
+                if sourceCenter.y + size!.height / 2 > screenSize!.height - screenInset {
+                    offset.y = screenSize!.height - screenInset - size!.height / 2 - sourceCenter.y
+                }
             }
             menuRightYConstraint?.constant = offset.y
         }
@@ -522,34 +552,39 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
             offset.y = -size!.height / 2 + arrowLength + cornerRadius
             menuRightYConstraint?.constant = offset.y
         }
-        /*
         else if menuPosition == .rightDown {
-            let x = sourceCenter.x + (sourceSize.width / 2) + arrowLength
-            let y = sourceCenter.y - arrowLength - cornerRadius
-            return CGPoint(x: x, y: y)
+            offset.y = size!.height / 2 - arrowLength - cornerRadius
+            menuRightYConstraint?.constant = offset.y
         }
-        else if menuPosition == .down {
-            var x = sourceCenter.x - (menuSize.width / 2)
-            let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
-            if x < screenInset {
-                x = screenInset
+        else if menuPosition == .down
+        {
+            if #available(iOS 11.0, *) {
+                // Handle safeAreaInsets
+                if sourceCenter.x - size!.width / 2 < screenInset + (overlayView?.safeAreaInsets.left)! {
+                    offset.x = screenInset + (overlayView?.safeAreaInsets.left)! + size!.width / 2 - sourceCenter.x
+                }
+                if sourceCenter.x + size!.width / 2 > screenSize!.width - screenInset - (overlayView?.safeAreaInsets.right)! {
+                    offset.x = screenSize!.width - screenInset - (overlayView?.safeAreaInsets.right)! - size!.width / 2 - sourceCenter.x
+                }
+            } else {
+                // Fallback on earlier versions
+                if sourceCenter.x - size!.width / 2 < screenInset {
+                    offset.x = screenInset + size!.width / 2 - sourceCenter.x
+                }
+                if sourceCenter.x + size!.width / 2 > screenSize!.width - screenInset {
+                    offset.x = screenSize!.width - screenInset - size!.width / 2 - sourceCenter.x
+                }
             }
-            if x + menuSize.width > screenSize.width - screenInset {
-                x = screenSize.width - menuSize.width - screenInset
-            }
-            return CGPoint(x: x, y: y)
+            menuDownXConstraint?.constant = offset.x
         }
         else if menuPosition == .downLeft {
-            let x = sourceCenter.x - menuSize.width + arrowLength + cornerRadius
-            let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
-            return CGPoint(x: x, y: y)
+            offset.x = -size!.width / 2 + arrowLength + cornerRadius
+            menuDownXConstraint?.constant = offset.x
         }
         else if menuPosition == .downRight {
-            let x = sourceCenter.x - arrowLength - cornerRadius
-            let y = sourceCenter.y + (sourceSize.height / 2) + arrowLength
-            return CGPoint(x: x, y: y)
+            offset.x = size!.width / 2 - arrowLength - cornerRadius
+            menuDownXConstraint?.constant = offset.x
         }
-        */
     }
 
     // MARK: Menu actions
@@ -665,7 +700,7 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
         get {
             if position == .auto {
                 // Calculate position of menu
-                let screenSize = UIScreen.main.bounds
+                let screenSize = (overlayView?.bounds.size)!
                 if screenSize.width > screenSize.height {
                     if sourceCenter.x < screenSize.width / 2 {
                         return .right
@@ -762,6 +797,7 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
         menuHeightConstraint?.constant = menuSize.height
         
         setNeedsDisplay()
+        setNeedsUpdateConstraints()
     }
 
     override public func layoutSubviews()
@@ -884,8 +920,9 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
         if let touch = touches.first {
             let point = touch.location(in: self)
             
-            let menuFrame = menuView?.frame
-            let arrowFrame = arrowView?.frame
+            let menuArea = menuView?.convert(menuView!.bounds, to: self)
+            let arrowArea = arrowView?.convert(menuView!.bounds, to: self)
+            let touchArea = bounds
             
             // Hide when on "source" view
             if bounds.contains(point) {
@@ -894,7 +931,7 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
                 }
             }
             // Hide when moved outside of menu
-            if !arrowFrame!.contains(point) && !menuFrame!.contains(point) && !bounds.contains(point) {
+            if !arrowArea!.contains(point) && !menuArea!.contains(point) && !touchArea.contains(point) {
                 if isOpen {
                     hide()
                 }
@@ -902,8 +939,8 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
             // Check if action is selected
             if isOpen {
                 for subview in menuView!.subviews {
-                    let subviewInSelf = subview.convert(subview.bounds, to: self)
-                    if subviewInSelf.contains(point) {
+                    let subviewArea = subview.convert(subview.bounds, to: self)
+                    if subviewArea.contains(point) {
                         if actions.indices.contains(subview.tag) {
                             let action = actions[subview.tag]
                             action.selected(self)

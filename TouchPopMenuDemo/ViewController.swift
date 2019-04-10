@@ -46,11 +46,11 @@ class ViewController: UIViewController
         menu4.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: { menu in print("Hello Undo") }))
 
         let menu = TouchPopMenu(pointTo: buttonCenter, inController: self)
-        menu.position = .leftUp
-        menu.addAction(action: TouchPopMenuAction(title: "Copy", selected: { menu in print("Hello Copy") }))
-        menu.addAction(action: TouchPopMenuAction(title: "Paste", selected: { menu in print("Hello Paste") }))
-        menu.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: { menu in print("Hello Undo") }))
-        menu.show()
+        menu.position = .down
+        menu.addAction(action: TouchPopMenuAction(title: "Move to .leftUp", selected: { menu in menu.position = .leftUp }))
+        menu.addAction(action: TouchPopMenuAction(title: "Move to .left", selected: { menu in menu.position = .left }))
+        menu.addAction(action: TouchPopMenuAction(title: "Move to .leftDown", selected: { menu in menu.position = .leftDown }))
+//        menu.show()
     }
     
     override func viewDidLoad() {
