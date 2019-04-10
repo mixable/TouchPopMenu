@@ -782,7 +782,7 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
             // Add border (= top border of label)
             if index > 0 {
                 let borderLayer = CALayer()
-                borderLayer.frame = CGRect(x: 0, y: menuSize.height, width: label.frame.width, height: 1)
+                borderLayer.frame = CGRect(x: 0, y: menuSize.height, width: label.frame.width, height: 0.5)
                 borderLayer.backgroundColor = dividerColor.cgColor
                 menuView!.layer.addSublayer(borderLayer)
             }
