@@ -21,6 +21,38 @@ class ViewController: UIViewController
     {
         super.loadView()
         
+        /*
+         Example with fixed position (center button)
+         */
+        let menu = TouchPopMenu(pointTo: buttonCenter, inController: self)
+        menu.position = .down
+        menu.addAction(action: TouchPopMenuAction(title: "Move to .leftUp", selected: { menu in
+            // Hide menu
+            menu.hide({ menu in
+                // Change menu position when menu is hidden
+                menu.position = .leftUp
+            })
+        }))
+        menu.addAction(action: TouchPopMenuAction(title: "Move to .left", selected: { menu in
+            menu.hide({ menu in
+                menu.position = .left
+            })
+        }))
+        menu.addAction(action: TouchPopMenuAction(title: "Move to .leftDown", selected: { menu in
+            menu.hide({ menu in
+                menu.position = .leftDown
+            })
+        }))
+        menu.addAction(action: TouchPopMenuAction(title: "Move to .auto", selected: { menu in
+            menu.hide({ menu in
+                menu.position = .auto
+            })
+        }))
+        menu.show()
+
+        /*
+         Examples with auto position (corner button)
+         */
         let menu1 = TouchPopMenu(pointTo: buttonTopLeft, inController: self)
         menu1.position = .auto
         menu1.addAction(action: TouchPopMenuAction(title: "Copy", selected: { menu in print("Hello Copy") }))
@@ -44,13 +76,6 @@ class ViewController: UIViewController
         menu4.addAction(action: TouchPopMenuAction(title: "Copy", selected: { menu in print("Hello Copy") }))
         menu4.addAction(action: TouchPopMenuAction(title: "Paste", selected: { menu in print("Hello Paste") }))
         menu4.addAction(action: TouchPopMenuAction(title: "Undo last action", selected: { menu in print("Hello Undo") }))
-
-        let menu = TouchPopMenu(pointTo: buttonCenter, inController: self)
-        menu.position = .down
-        menu.addAction(action: TouchPopMenuAction(title: "Move to .leftUp", selected: { menu in menu.position = .leftUp }))
-        menu.addAction(action: TouchPopMenuAction(title: "Move to .left", selected: { menu in menu.position = .left }))
-        menu.addAction(action: TouchPopMenuAction(title: "Move to .leftDown", selected: { menu in menu.position = .leftDown }))
-//        menu.show()
     }
     
     override func viewDidLoad() {
