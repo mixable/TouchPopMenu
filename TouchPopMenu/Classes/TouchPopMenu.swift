@@ -255,30 +255,31 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
     {
         // Create touch view (self)
         clipsToBounds = false
-        translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = .clear
         layer.masksToBounds = false
         touchDelegate = self
         
         // Check if position changes and menu needs to be repositioned
         addObserver(self, forKeyPath: "center", options: .new, context: nil)
-
+        NotificationCenter.default.addObserver(self, selector: #selector(checkPositionChange), name: UIResponder.keyboardDidShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(checkPositionChange), name: UIResponder.keyboardDidHideNotification, object: nil)
+        
         sourceSuperview?.addSubview(self)
         sourceSuperview?.bringSubviewToFront(self)
-        sourceSuperview?.addConstraints([
-            NSLayoutConstraint(item: self, attribute: .leading, relatedBy: .equal, toItem: source, attribute: .leading, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: self, attribute: .trailing, relatedBy: .equal, toItem: source, attribute: .trailing, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: self, attribute: .top, relatedBy: .equal, toItem: source, attribute: .top, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: self, attribute: .bottom, relatedBy: .equal, toItem: source, attribute: .bottom, multiplier: 1, constant: 0)
-            ])
-
+        
+        translatesAutoresizingMaskIntoConstraints = false
+        leftAnchor.constraint(equalTo: (source as! UIView).leftAnchor, constant: 0).isActive = true
+        topAnchor.constraint(equalTo: (source as! UIView).topAnchor, constant: 0).isActive = true
+        rightAnchor.constraint(equalTo: (source as! UIView).rightAnchor, constant: 0).isActive = true
+        bottomAnchor.constraint(equalTo: (source as! UIView).bottomAnchor, constant: 0).isActive = true
+        
         // Create overlay view
         overlayView = TouchHandlerView(frame: controller.view.bounds)
         overlayView!.layer.backgroundColor = overlayColor.cgColor
         overlayView!.isHidden = true
         overlayView!.touchDelegate = self
         sourceWindow!.addSubview(overlayView!)
-
+        
         overlayView!.translatesAutoresizingMaskIntoConstraints = false
         overlayView!.leftAnchor.constraint(equalTo: sourceWindow!.leftAnchor, constant: 0).isActive = true
         overlayView!.topAnchor.constraint(equalTo: sourceWindow!.topAnchor, constant: 0).isActive = true
@@ -301,7 +302,7 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
         shadowView!.rightAnchor.constraint(equalTo: overlayView!.rightAnchor, constant: 0).isActive = true
         shadowView!.bottomAnchor.constraint(equalTo: overlayView!.bottomAnchor, constant: 0).isActive = true
         
-        // Create shadow view
+        // Create position view
         positionView = UIView(frame: convert(self.bounds, to: overlayView))
         positionView!.backgroundColor = .clear
         shadowView!.addSubview(positionView!)
@@ -337,14 +338,24 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
         }
     }
     
+    @objc func checkPositionChange(notification: NSNotification)
+    {
+        // Recalculate frame of positionView
+        applyPosition()
+    }
+    
     private func applyPosition()
     {
-        positionView!.frame = convert(self.bounds, to: overlayView)
-        arrowView!.position = menuPosition
-        
-        layoutArrowConstraints()
-        layoutMenuConstraints()
-        setNeedsLayout()
+        let sourceFrame = convert(self.bounds, to: overlayView)
+        if (sourceFrame != positionView!.frame)
+        {
+            positionView!.frame = sourceFrame
+            arrowView!.position = menuPosition
+            
+            layoutArrowConstraints()
+            layoutMenuConstraints()
+            setNeedsLayout()
+        }
     }
     
     // MARK: Constraints
@@ -781,12 +792,13 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
             
             // Add border (= top border of label)
             if index > 0 {
-                let borderLayer = CALayer()
-                borderLayer.frame = CGRect(x: 0, y: menuSize.height, width: label.frame.width, height: 0.5)
-                borderLayer.backgroundColor = dividerColor.cgColor
-                menuView!.layer.addSublayer(borderLayer)
+                let divider = CALayer()
+                divider.frame = CGRect(x: 0, y: menuSize.height, width: label.frame.width, height: 0.5)
+                divider.backgroundColor = dividerColor.cgColor
+                divider.name = "divider"
+                menuView!.layer.addSublayer(divider)
             }
-
+            
             menuView!.addSubview(actionView)
             menuSize.height += labelHeight
             if size.width + (labelInset * 2) > menuSize.width {
@@ -799,18 +811,20 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
         setNeedsDisplay()
         setNeedsUpdateConstraints()
     }
-
+    
     override public func layoutSubviews()
     {
         super.layoutSubviews()
         
-        for divider in menuView!.layer.sublayers! {
-            divider.frame.size.width = menuSize.width
+        for sublayer in menuView!.layer.sublayers! {
+            if sublayer.name == "divider" {
+                sublayer.frame.size.width = menuSize.width
+            }
         }
-        for subviews in menuView!.subviews {
-            subviews.frame.size.width = menuSize.width
+        for subview in menuView!.subviews {
+            subview.frame.size.width = menuSize.width
         }
-
+        
         arrowView!.setNeedsLayout()
         arrowView!.setNeedsDisplay()
     }
@@ -822,11 +836,13 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
      */
     private func applyTheme()
     {
-        for divider in menuView!.layer.sublayers! {
-            divider.backgroundColor = dividerColor.cgColor
+        for sublayer in menuView!.layer.sublayers! {
+            if sublayer.name == "divider" {
+                sublayer.backgroundColor = dividerColor.cgColor
+            }
         }
-        for actionViews in menuView!.subviews {
-            for subview in actionViews.subviews {
+        for actionView in menuView!.subviews {
+            for subview in actionView.subviews {
                 if let label = subview as? UILabel {
                     if label.tag == 1 {
                         label.textColor = textColor
