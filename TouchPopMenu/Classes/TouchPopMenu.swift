@@ -481,7 +481,6 @@ public class TouchPopMenu : TouchHandlerView, TouchHandlerDelegate
         let screenSize = overlayView?.bounds.size
         var offset : CGPoint = CGPoint(x: 0, y: 0)
 
-        NSLog("menuPosition \(menuPosition)")
         if menuPosition == .left {
             if #available(iOS 11.0, *) {
                 // Handle safeAreaInsets
